@@ -67,6 +67,13 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 .credit .jm,.jm{width:14px;height:14px;vertical-align:-2px;margin-right:5px;border-radius:3px}
 .hlogo{width:34px;height:34px;border-radius:50%;background:#fff;flex:none;box-shadow:0 0 0 2px var(--gold)}
 .center{text-align:center}
+.rn.big{font-size:20px}
+.pill{display:inline-block;border-radius:14px;padding:4px 10px;font-weight:800;font-size:16px;white-space:nowrap;margin-left:4px}
+.pill.cow{background:#FFF4D2;color:#7A4B00;border:1px solid #F5B800}.pill.bh{background:#2A1F1F;color:#fff}.pill.off{background:#FEE4E2;color:#B42318}
+.spk{border:0;background:var(--light);border-radius:18px;width:40px;height:36px;font-size:18px;cursor:pointer}
+.row.st-band{background:#FEE4E2;border-left:6px solid #D7191F}.row.st-chg{background:#FFF1C2;border-left:6px solid var(--gold)}
+.shiftbar{padding:10px 16px 0}.chip.big{font-size:17px;padding:12px 18px;min-height:52px;flex:1;justify-content:center}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:12px 16px;font-size:13px;color:var(--mut)}.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:5px;vertical-align:-2px}
 .err{color:#B42318;font-size:14px;margin:0}
 .empty{padding:32px 16px;text-align:center;color:var(--mut)}
 .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--b);border-radius:50%;animation:sp 0.8s linear infinite;margin:40px auto}
@@ -177,13 +184,13 @@ function closeMenu() { V.menu = false; render(); }
 function menuHtml() {
   return `<div class="menu" onclick="if(event.target===this)closeMenu()"><div class="panel">
     <div class="who"><p style="margin:0;font-size:18px;font-weight:700">${esc(S.user.name)}</p><p class="rs">${esc(S.user.role === 'Boy' ? 'Delivery boy' : S.user.role)}</p></div>
-    ${isOwner() ? `<button class="item" onclick="V.menu=false;V.about=false;V.tab='staff';render()">Staff / Login control</button>` : ''}
+    ${isOwner() ? `<button class="item" onclick="V.menu=false;V.about=false;V.tab='staff';render()">Staff / Login control</button><button class="item" onclick="V.menu=false;V.about=false;V.tab='rates';render()">Doodh ka rate</button>` : ''}
     <button class="item" onclick="V.menu=false;changeMyPin()">Mera PIN badlo</button>
     <button class="item" onclick="V.menu=false;V.about=true;render()">About</button>
     <button class="item" onclick="logout()">Logout</button>
   </div></div>`;
 }
-function go(tab) { V.tab = tab; V.about = false; V.billId = null; if (!['change', 'payment', 'saman'].includes(tab)) V.cust = null; render(); }
+function go(tab) { V.tab = tab; V.about = false; V.billId = null; V.stock = null; if (!['change', 'payment', 'saman'].includes(tab)) V.cust = null; render(); }
 function refresh() { V.cache = {}; flushOutbox(); render(); }
 
 /* ============ screens ============ */
@@ -215,98 +222,136 @@ async function load(key, fn) {
   const r = await fn(); V.cache[key] = r; return r;
 }
 
+/* ----- chhote helpers: bolna, location, doodh ki goli ----- */
+const COW = '🐄', BH = '🐃';
+V.shift = V.shift || (new Date().getHours() < 14 ? 'Subh' : 'Sham');
+function shiftChips() {
+  return `<div class="chips shiftbar">${[['Subh', '☀️ Subh'], ['Sham', '🌙 Sham']].map(([s, t]) => `<button type="button" class="chip big ${V.shift === s ? 'on' : ''}" onclick="V.shift='${s}';V.routeData=null;V.cache={};render()">${t}</button>`).join('')}</div>`;
+}
+function pills(cow, bh) {
+  const p = [];
+  if (cow) p.push(`<span class="pill cow">${COW} ${L(cow)}</span>`);
+  if (bh) p.push(`<span class="pill bh">${BH} ${L(bh)}</span>`);
+  return p.join('') || '<span class="pill off">0</span>';
+}
+function sayQty(cow, bh) {
+  const n = x => String(x).replace('.5', ' aadha');
+  const p = []; if (cow) p.push('gaay ' + n(cow) + ' litre'); if (bh) p.push('bhains ' + n(bh) + ' litre');
+  return p.join(', ') || 'aaj doodh nahi';
+}
+function speak(t) {
+  try {
+    if (!('speechSynthesis' in window)) return toast('Is phone mein bolne ki suvidha nahi');
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t); u.lang = 'hi-IN'; u.rate = 0.9;
+    const v = speechSynthesis.getVoices().find(x => /hi[-_]IN/i.test(x.lang)); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+let LOC = null;
+function getLoc() {
+  return new Promise(res => {
+    if (LOC && Date.now() - LOC.t < 60000) return res(LOC);
+    if (!navigator.geolocation) return res({});
+    let done = false; const fin = v => { if (!done) { done = true; res(v); } };
+    setTimeout(() => fin(LOC || {}), 7000);
+    navigator.geolocation.getCurrentPosition(p => { LOC = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, t: Date.now() }; fin(LOC); }, () => fin({}), { enableHighAccuracy: true, timeout: 6500, maximumAge: 30000 });
+  });
+}
+async function withLoc(data) { const l = await getLoc(); return Object.assign({}, data, l.lat ? { lat: l.lat, lng: l.lng, acc: l.acc } : {}); }
+const mapLink = (lat, lng) => `https://www.google.com/maps?q=${lat},${lng}`;
+const farTxt = m => m == null ? '' : m > 150 ? `<span class="badge" style="color:#B42318;background:#FEE4E2">⚠️ ghar se ${m} m door</span>` : `<span class="badge" style="color:var(--ok);background:#E7F6EC">📍 ghar pe</span>`;
+
 /* ----- boy: route ----- */
 async function routeView() {
   const boyId = isOwner() ? V.boyId : null;
   if (isOwner() && !boyId) return ownerPickBoy();
-  const r = await load('route_' + (boyId || '') + V.date, () => api('route', { date: V.date, boyId }));
+  const r = await load('route_' + (boyId || '') + V.date + V.shift, () => api('route', { date: V.date, boyId, shift: V.shift }));
   V.routeData = r;
-  const today = r.customers.reduce((s, c) => s + c.actual, 0);
-  const def = r.customers.reduce((s, c) => s + c.def, 0);
+  const tot = r.customers.reduce((s, c) => s + c.cow + c.bh, 0);
   const rows = r.customers.map(c => {
-    let badge = '';
-    if (c.swapTo) badge = (c.swapTo === 'Buffalo' ? 'Bhains' : 'Cow') + ' doodh diya';
-    else if (c.changed) badge = c.actual === 0 ? 'Ghar band' : (c.actual > c.def ? '+' + L(c.actual - c.def) + ' extra' : (c.actual < c.def ? '−' + L(c.def - c.actual) + ' kam' : 'Note'));
-    const saman = c.salesTotal ? `<span class="badge" style="color:var(--b);background:var(--light);margin-left:4px">Saman ${R(c.salesTotal)}</span>` : '';
-    return `<button class="row" data-name="${esc((c.name + ' ' + c.address).toLowerCase())}" onclick="openChange('${esc(c.id)}')">
-      <div><p class="rn">${esc(c.name)}</p><p class="rs">${esc(c.address)} · ${esc(c.milk)}</p>${badge ? `<span class="badge">${esc(badge)}</span>` : ''}${saman}</div>
-      <p class="rq">${L(c.actual)}</p></button>`;
+    const band = (c.cow + c.bh === 0);
+    const st = band ? 'st-band' : c.changed ? 'st-chg' : '';
+    const note = c.chhutti ? 'Chhutti' : band ? 'Band' : c.changed ? (c.remark || 'Badlaav') : '';
+    const nm = c.hindi || c.name;
+    return `<div class="row ${st}" role="button" tabindex="0" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="openChange('${esc(c.id)}')">
+      <div style="flex:1;min-width:0"><p class="rn big">${esc(nm)}</p><p class="rs">${c.hindi ? esc(c.name) + ' · ' : ''}${esc(c.address)}</p>
+        ${note ? `<span class="badge">${esc(note)}</span>` : ''}${c.salesTotal ? `<span class="badge" style="color:var(--b);background:var(--light);margin-left:4px">Saman ${R(c.salesTotal)}</span>` : ''}${c.paidToday ? `<span class="badge" style="color:var(--ok);background:#E7F6EC;margin-left:4px">₹ ${R(c.paidToday)} mila</span>` : ''}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${pills(c.cow, c.bh)}
+        <button class="spk" aria-label="${esc(nm)} sunao" onclick="event.stopPropagation();speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></div></div>`;
   }).join('');
-  return header(isOwner() ? r.boy.name + ' ka route' : 'Mera Route', `${r.boy.name} · ${r.boy.route} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
-    + `<div class="body"><div class="strip"><span>${r.customers.length} ghar</span><span>Roz ${L(def)}</span><span>Aaj ${L(today)}</span></div>
+  return header(isOwner() ? r.boy.name + ' ka route' : 'Mera Route', `${r.boy.name} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
+    + `<div class="body">${shiftChips()}<div class="strip"><span>${r.customers.length} ghar</span><span>${V.shift === 'Subh' ? '☀️' : '🌙'} ${L(tot)}</span></div>
     <div class="search"><input class="in" type="search" placeholder="Ghar khojo…" oninput="filterRows(this.value)" aria-label="Ghar khojo"></div>
-    <div id="rows">${rows || '<p class="empty">Koi ghar nahi mila</p>'}</div>
-    <div class="pad"><button class="btn" onclick="openChange()">+ Badlaav daalo</button></div></div>`;
+    <div id="rows">${rows || '<p class="empty">Is time koi ghar nahi</p>'}</div>
+    <div class="legend"><span><i style="background:#fff;border:1px solid var(--line)"></i>Normal</span><span><i style="background:#FFF1C2"></i>Badlaav</span><span><i style="background:#FEE4E2"></i>Band / chhutti</span></div></div>`;
 }
 function filterRows(q) { q = q.toLowerCase(); document.querySelectorAll('#rows .row').forEach(r => r.style.display = r.dataset.name.includes(q) ? '' : 'none'); }
 function openChange(id) { V.cust = id || null; V.tab = 'change'; render(); }
-
 async function ensureRoute() {
   const boyId = isOwner() ? V.boyId : null;
-  return V.routeData || load('route_' + (boyId || '') + V.date, () => api('route', { date: V.date, boyId }));
+  return V.routeData || load('route_' + (boyId || '') + V.date + V.shift, () => api('route', { date: V.date, boyId, shift: V.shift }));
 }
 
-/* ----- boy: change form ----- */
+/* ----- boy: badlaav (ek ghar) ----- */
 async function changeView() {
   if (isOwner() && !V.boyId) return ownerPickBoy('change');
   const r = await ensureRoute();
   const c = r.customers.find(x => x.id === V.cust) || null;
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
-  const kind = !c ? '' : (c.swapTo ? 'Normal' : !c.changed ? 'Normal' : c.actual === 0 ? 'Ghar band' : c.actual > c.def ? 'Extra' : c.actual < c.def ? 'Kam' : 'Normal');
-  const mt = c ? (c.swapTo || c.milk) : '';
-  return header('Badlaav daalo', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
-    <div><label class="lb" for="cust">Ghar</label><select class="in" id="cust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
-    ${c ? `
-    <div class="info"><span>Roz ki quantity</span><b>${L(c.def)} · ${c.milk === 'Buffalo' ? 'Bhains' : 'Cow'}</b></div>
-    <div><label class="lb">Aaj kaunsa doodh diya?</label><div class="chips" id="mtype">
-      ${[['Cow', 'Cow'], ['Buffalo', 'Bhains']].map(([v, t]) => `<button type="button" class="chip ${v === mt ? 'on' : ''}" data-v="${v}" onclick="pickType('${v}','${c.milk}')">${t}</button>`).join('')}
-    </div></div>
-    <div><label class="lb">Kya hua?</label><div class="chips" id="kind">
-      ${['Normal', 'Ghar band', 'Extra', 'Kam'].map(k => `<button type="button" class="chip ${k === kind ? 'on' : ''}" onclick="pickKind('${k}',${c.def})">${k}</button>`).join('')}
-    </div></div>
-    <div><label class="lb" for="act">Aaj di (litre)</label><div class="qty">
-      <button type="button" class="qbtn" aria-label="Kam karo" onclick="stepQty(-0.5)">−</button>
-      <input class="in" id="act" type="number" inputmode="decimal" step="0.5" min="0" value="${c.actual}">
-      <button type="button" class="qbtn" aria-label="Zyada karo" onclick="stepQty(0.5)">+</button></div></div>
-    <div><label class="lb" for="rem">Remark (optional)</label><input class="in" id="rem" maxlength="100" value="${esc(c.remark)}" placeholder="Jaise: ghar pe taala, mehmaan aaye"></div>
-    <button class="btn" id="sbtn" onclick="saveChange('${esc(c.id)}')">Save karo</button>` : '<p class="rs">Upar se ghar chuno.</p>'}
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
+  if (!c) return header('Badlaav', showDate(V.date), "go('route')") + `<div class="body">${shiftChips()}<div class="pad">
+    <div><label class="lb" for="cust">Ghar chuno</label><select class="in" id="cust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div></div></div>`;
+  const nm = c.hindi || c.name;
+  const step = (id, lab, val) => `<div><label class="lb" for="${id}">${lab}</label><div class="qty">
+      <button type="button" class="qbtn" aria-label="${lab} kam" onclick="stepQ('${id}',-0.5)">−</button>
+      <input class="in" id="${id}" type="number" inputmode="decimal" step="0.5" min="0" value="${id === 'qcow' ? c.cow : c.bh}">
+      <button type="button" class="qbtn" aria-label="${lab} zyada" onclick="stepQ('${id}',0.5)">+</button></div></div>`;
+  return header(nm, (V.shift === 'Subh' ? '☀️ Subh' : '🌙 Sham') + ' · ' + showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
+    <div class="info" style="align-items:center"><span>Roz ka</span><span>${pills(c.defCow, c.defBh)} <button class="spk" aria-label="Sunao" onclick="speak('${esc(nm).replace(/'/g, '')}, roz ${sayQty(c.defCow, c.defBh)}')">🔊</button></span></div>
+    <div class="chips"><button type="button" class="chip big" onclick="setQ(${c.defCow},${c.defBh},'')">✅ Roz jaisa</button><button type="button" class="chip big" onclick="setQ(0,0,'Ghar band')">🔒 Ghar band</button></div>
+    ${step('qcow', COW + ' Gaay (litre)')}${step('qbh', BH + ' Bhains (litre)')}
+    <div><label class="lb" for="rem">Note (zaroori nahi)</label><input class="in" id="rem" maxlength="100" value="${esc(c.remark)}" placeholder="Jaise: mehmaan aaye"></div>
+    <button class="btn" id="sbtn" onclick="saveChange('${esc(c.id)}')">Save karo</button>
+    <p class="sec">GHAR KUCH DIN BAND HAI?</p>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="cf">Kab se</label><input class="in" id="cf" type="date" value="${V.date}"></div><div style="flex:1"><label class="lb" for="ct">Kab tak</label><input class="in" id="ct" type="date" value="${V.date}"></div></div>
+    <button class="btn out" onclick="saveChhutti('${esc(c.id)}')">Chhutti save karo</button>
+    ${!c.hasLoc ? `<p class="sec">GHAR KI LOCATION</p><p class="rs" style="margin:0">Ghar ke darwaze pe khade hoke ek baar dabao.</p><button class="btn out" id="hlbtn" onclick="saveHouseLoc('${esc(c.id)}')">📍 Ghar ki location save karo</button>` : ''}
   </div></div>`;
 }
-function pickKind(k, def) {
-  const a = $('#act');
-  if (k === 'Normal') { a.value = def; $('#rem').value = ''; }
-  if (k === 'Ghar band') { a.value = 0; if (!$('#rem').value) $('#rem').value = 'Ghar band'; }
-  if (k === 'Extra') a.value = def + 0.5;
-  if (k === 'Kam') a.value = Math.max(0, def - 0.5);
-  document.querySelectorAll('#kind .chip').forEach(b => b.classList.toggle('on', b.textContent === k));
-}
-function pickType(v, base) {
-  document.querySelectorAll('#mtype .chip').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  const r = $('#rem'); if (v === base && /^Doodh badla/.test(r.value)) r.value = '';
-}
-function stepQty(d) { const a = $('#act'); a.value = Math.max(0, (Number(a.value) || 0) + d); }
+function stepQ(id, d) { const a = $('#' + id); a.value = Math.max(0, (Number(a.value) || 0) + d); }
+function setQ(cow, bh, note) { $('#qcow').value = cow; $('#qbh').value = bh; $('#rem').value = note; }
 async function saveChange(id) {
   const b = $('#sbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
   try {
-    const milkType = (document.querySelector('#mtype .chip.on') || {}).dataset?.v;
-    const r = await send('saveChange', { custId: id, date: V.date, actual: Number($('#act').value), remark: $('#rem').value.trim(), boyId: V.boyId, milkType });
+    const data = await withLoc({ custId: id, date: V.date, shift: V.shift, cow: Number($('#qcow').value) || 0, bh: Number($('#qbh').value) || 0, remark: $('#rem').value.trim(), boyId: V.boyId });
+    const r = await send('saveChange', data);
     toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Save ho gaya');
-    const rd = await ensureRoute(); const c = rd.customers.find(x => x.id === id);
-
     V.cache = {}; V.routeData = null; V.cust = null; go('route');
   } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
 }
+async function saveChhutti(id) {
+  const from = $('#cf').value, to = $('#ct').value;
+  if (!from || !to || to < from) return toast('Tareekh sahi chuno');
+  try { await api('addChhutti', { custId: id, from, to }); toast('Chhutti save: ' + showDate(from) + ' se ' + showDate(to)); V.cache = {}; V.routeData = null; render(); } catch (e) { toast(e.message); }
+}
+async function saveHouseLoc(id) {
+  const b = $('#hlbtn'); b.disabled = true; b.textContent = 'Location le rahe hain…';
+  LOC = null; const l = await getLoc();
+  if (!l.lat) { toast('Location nahi mili. Phone mein Location chalu karo aur app ko permission do.'); b.disabled = false; b.textContent = '📍 Ghar ki location save karo'; return; }
+  try { await api('saveHouseLoc', { custId: id, lat: l.lat, lng: l.lng, acc: l.acc }); toast('Ghar ki location save ho gayi'); V.cache = {}; V.routeData = null; render(); }
+  catch (e) { toast(e.message); b.disabled = false; b.textContent = '📍 Ghar ki location save karo'; }
+}
 
-/* ----- boy: saman (other items) ----- */
+/* ----- boy: saman ----- */
 async function samanView() {
   if (isOwner() && !V.boyId) return ownerPickBoy('saman');
   const [r, it] = await Promise.all([ensureRoute(), load('items', () => api('items'))]);
   V.items = it.items;
   const c = r.customers.find(x => x.id === V.cust) || null;
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
-  const cats = [...new Set(it.items.filter(i => i.cat !== 'Doodh').map(i => i.cat))];
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
+  const cats = [...new Set(it.items.map(i => i.cat))];
   const itemOpts = cats.map(cat => `<optgroup label="${esc(cat)}">` + it.items.filter(i => i.cat === cat).map(i => `<option value="${esc(i.id)}" ${i.id === V.item ? 'selected' : ''}>${esc(i.name)} — ${R(i.rate)}/${esc(i.unit)}</option>`).join('') + '</optgroup>').join('');
-  const today = c && c.sales.length ? `<div><p class="sec">AAJ IS GHAR KO DIYA</p>` + c.sales.map(x => `<div class="li"><div><p style="font-weight:600">${esc(x.item)}</p><p class="rs">${x.qty} ${esc(x.unit)} × ${R(x.rate)}</p></div><div style="display:flex;align-items:center;gap:6px"><b>${R(x.amount)}</b><button class="icon-btn" style="color:#B42318" aria-label="${esc(x.item)} hatao" onclick="delSale('${esc(x.id)}')">${svg('x', 20)}</button></div></div>`).join('') + `<div class="info" style="margin-top:10px"><span>Kul saman</span><b>${R(c.salesTotal)}</b></div></div>` : '';
+  const today = c && c.sales.length ? `<div><p class="sec">AAJ IS GHAR KO DIYA</p>` + c.sales.map(x => `<div class="li"><div><p style="font-weight:600">${esc(x.item)}</p><p class="rs">${x.qty} ${esc(x.unit)}</p></div><div style="display:flex;align-items:center;gap:6px"><b>${R(x.amount)}</b><button class="icon-btn" style="color:#B42318" aria-label="${esc(x.item)} hatao" onclick="delSale('${esc(x.id)}')">${svg('x', 20)}</button></div></div>`).join('') + `<div class="info" style="margin-top:10px"><span>Kul saman</span><b>${R(c.salesTotal)}</b></div></div>` : '';
   const sel = V.items.find(i => i.id === V.item);
   return header('Saman diya', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
     <div><label class="lb" for="scust">Ghar</label><select class="in" id="scust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
@@ -334,7 +379,7 @@ async function saveSale(custId) {
   const paidNow = $('#spaid').checked; const mode = (document.querySelector('#smode .chip.on') || {}).textContent || 'Cash';
   const b = $('#ssbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
   try {
-    const r = await send('saveSale', { custId, itemId, qty, paidNow, mode, date: V.date });
+    const r = await send('saveSale', await withLoc({ custId, itemId, qty, paidNow, mode, date: V.date }));
     toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Saman save ho gaya' + (paidNow ? ', payment bhi' : ''));
     V.cache = {}; V.routeData = null; V.item = null; render();
   } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
@@ -348,36 +393,35 @@ async function delSale(id) {
 async function paymentView() {
   if (isOwner() && !V.boyId) return ownerPickBoy('payment');
   const r = await ensureRoute();
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${x.id === V.cust ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${x.id === V.cust ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
   let info = '';
   if (V.cust) {
     const c = await load('cust_' + V.cust, () => api('customer', { custId: V.cust }));
-    info = `<div class="info"><span>${esc(c.month || 'Is mahine')} ka bill</span><b>${R(c.bill)}</b></div>
-      ${c.other ? `<p class="rs" style="margin:-6px 2px 0">Doodh ${R(c.milkAmt)} + saman ${R(c.other)}</p>` : ''}
+    info = `${c.purana ? `<div class="info" style="background:#fff;padding:0 2px"><span>Pichhla baaki</span><b>${R(c.purana)}</b></div>` : ''}
+      <div class="info"><span>${esc(c.month)} (aaj tak)</span><b>${R(c.bill)}</b></div>
       <div class="info" style="background:#fff;padding:0 2px"><span>Jama</span><b>${R(c.paid)}</b></div>
-      ${c.purana ? `<div class="info" style="background:#fff;padding:0 2px"><span>Pichhla baaki</span><b>${R(c.purana)}</b></div>` : ''}
-      <div class="info" style="background:#fff;padding:0 2px"><span>Kul baaki</span><b style="color:var(--warn);font-size:18px">${R(c.balance)}</b></div>
-      <div><label class="lb" for="amt">Kitna mila (₹)</label><input class="in" id="amt" type="number" inputmode="numeric" min="1" placeholder="Amount"></div>
-      <div><label class="lb">Kaise mila?</label><div class="chips" id="mode">${['Cash', 'UPI', 'Bank'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#mode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div></div>
+      <div class="info" style="background:#fff;padding:0 2px"><span>Kul baaki</span><b style="color:var(--warn);font-size:22px">${R(c.balance)}</b></div>
+      <div><label class="lb" for="amt">Kitna mila (₹)</label><input class="in" id="amt" type="number" inputmode="numeric" min="1" placeholder="Amount" style="font-size:22px;font-weight:700"></div>
+      <div><label class="lb">Kaise mila?</label><div class="chips" id="mode">${[['Cash', '💵 Cash'], ['UPI', '📱 UPI'], ['Bank', '🏦 Bank']].map(([m, t], i) => `<button type="button" class="chip big ${i === 0 ? 'on' : ''}" data-m="${m}" onclick="document.querySelectorAll('#mode .chip').forEach(x=>x.classList.toggle('on',x===this))">${t}</button>`).join('')}</div></div>
       <button class="btn" id="pbtn" onclick="savePayment()">Save karo</button>`;
   }
-  return header('Payment entry', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
+  return header('Payment', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
     <div><label class="lb" for="pcust">Ghar</label><select class="in" id="pcust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
     ${info || '<p class="rs">Upar se ghar chuno.</p>'}</div></div>`;
 }
 async function savePayment() {
   const amt = Number($('#amt').value);
   if (!(amt > 0)) return toast('Amount daalo');
-  const mode = (document.querySelector('#mode .chip.on') || {}).textContent || 'Cash';
+  const mode = (document.querySelector('#mode .chip.on') || {}).dataset.m || 'Cash';
   const b = $('#pbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
   try {
-    const r = await send('savePayment', { custId: V.cust, date: V.date, amount: amt, mode });
+    const r = await send('savePayment', await withLoc({ custId: V.cust, date: V.date, amount: amt, mode }));
     toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : R(amt) + ' ' + mode + ' save ho gaya');
-    delete V.cache['cust_' + V.cust]; render();
+    V.cache = {}; V.routeData = null; render();
   } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
 }
 
-/* ----- owner ----- */
+/* ----- owner: Aaj ----- */
 async function ownerPickBoy(next) {
   const r = await load('boys', () => api('boys'));
   return header('Boy chuno', 'Kiska route dekhna hai?') + `<div class="body">` + r.boys.map(b =>
@@ -385,38 +429,223 @@ async function ownerPickBoy(next) {
 }
 async function aajView() {
   const r = await load('sum_' + V.date, () => api('ownerSummary', { date: V.date }));
-  const boys = r.boys.map(b => `<div class="li"><div><p style="font-weight:600">${esc(b.name)}</p><p class="rs">${esc(b.route)} · ${b.skipped ? b.skipped + ' chhoote' : 'sab ghar'}${b.saman ? ' · saman ' + R(b.saman) : ''}${b.cash ? ' · cash ' + R(b.cash) : ''}</p></div><p class="rq">${L(b.total)}</p></div>`).join('');
-  const ch = r.changes.map(c => `<div class="li"><p>${esc(c.name)}</p><p class="rs" style="margin:0">${/^Doodh badla/.test(c.remark) ? esc(c.remark.replace(/^Doodh badla: /, '')) : c.actual === 0 ? 'Ghar band' : (c.actual > c.def ? '+' + L(c.actual - c.def) + ' extra' : c.actual < c.def ? '−' + L(c.def - c.actual) + ' kam' : esc(c.remark))}</p></div>`).join('');
+  V.sum = r;
+  const boys = r.boys.filter(b => b.total || b.cashPending || b.cashToday || b.shifts.some(s => s.houses || s.stock)).map(b => {
+    const sh = b.shifts.filter(s => s.houses || s.stock).map(s => {
+      const diff = s.diff == null ? `<button class="chip" onclick="openStock('${esc(b.id)}','${s.shift}')">Doodh diya? daalo</button>`
+        : Math.abs(s.diff) < 0.01 ? `<span class="badge" style="color:var(--ok);background:#E7F6EC">✅ hisaab barabar</span>`
+        : `<span class="badge" style="color:#B42318;background:#FEE4E2">⚠️ ${s.diff > 0 ? L(s.diff) + ' ka hisaab nahi' : L(-s.diff) + ' zyada baanta?'}</span> <button class="chip" onclick="openStock('${esc(b.id)}','${s.shift}')">Badlo</button>`;
+      return `<div class="li" style="padding:6px 0"><div><p style="margin:0">${s.shift === 'Subh' ? '☀️' : '🌙'} ${L(s.cow + s.bh)} <span class="rs">(${COW} ${L(s.cow)} · ${BH} ${L(s.bh)} · ${s.houses} ghar${s.band ? ' · ' + s.band + ' band' : ''})</span></p></div><div style="text-align:right">${diff}</div></div>`;
+    }).join('');
+    return `<div class="card" style="padding:12px 14px;margin-bottom:10px;border-left-color:var(--b)">
+      <div style="display:flex;justify-content:space-between;align-items:center"><p style="margin:0;font-weight:700;font-size:17px">${esc(b.name)} <span class="rs">· ${esc(b.route)}</span></p><p class="rq">${L(b.total)}</p></div>
+      ${sh}
+      <div class="li" style="padding:6px 0;border:0"><p style="margin:0">💵 Cash aaj ${R(b.cashToday)}${b.saman ? ' · saman ' + R(b.saman) : ''}<br><span class="rs">Boy ke paas baaki cash: <b style="color:${b.cashPending > 0 ? 'var(--warn)' : 'var(--ok)'}">${R(b.cashPending)}</b></span></p>
+        <button class="chip" onclick="takeCash('${esc(b.id)}','${esc(b.name)}',${b.cashPending})">Cash liya</button></div></div>`;
+  }).join('');
+  const ch = r.changes.map(c => `<div class="li"><div><p style="margin:0">${esc(c.name)} <span class="rs">${c.shift === 'Subh' ? '☀️' : '🌙'}</span></p><p class="rs">${c.cow + c.bh === 0 ? 'Band' : `${COW} ${L(c.cow)} · ${BH} ${L(c.bh)} (roz ${L(c.defCow + c.defBh)})`}${c.remark ? ' · ' + esc(c.remark) : ''}</p></div><div>${c.noLoc ? '<span class="badge">📍 location nahi</span>' : farTxt(c.far)}</div></div>`).join('');
   const upd = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   return header('Aaj', showDate(r.date) + ' · update ' + upd + ' (har minute)') + `<div class="body"><div class="pad">
     ${r.alerts ? `<button class="info" style="border:0;background:#FEE4E2;color:#B42318;font-weight:700;cursor:pointer;text-align:left" onclick="go('staff')"><span>Aaj ${r.alerts} galat PIN koshish</span><span>Dekho ›</span></button>` : ''}
     <div><label class="lb" for="dt">Date</label><input class="in" id="dt" type="date" value="${V.date}" onchange="V.date=this.value;render()"></div>
-    <div class="cards"><div class="card"><p class="k">Doodh gaya</p><p class="v">${L(r.totals.total)}</p></div><div class="card"><p class="k">Ghar</p><p class="v">${r.totals.houses}</p></div><div class="card"><p class="k">Chhoote</p><p class="v">${r.totals.skipped}</p></div></div>
+    <div class="cards"><div class="card"><p class="k">Doodh gaya</p><p class="v">${L(r.totals.total)}</p></div><div class="card"><p class="k">Payment mila</p><p class="v">${R(r.totals.payments)}</p></div><div class="card"><p class="k">Boys ke paas cash</p><p class="v" style="color:${r.totals.cashPending > 0 ? 'var(--warn)' : 'inherit'}">${R(r.totals.cashPending)}</p></div></div>
+    ${r.totals.stockDiff > 0.01 ? `<div class="info" style="background:#FEE4E2;color:#B42318;font-weight:700"><span>⚠️ Doodh ka hisaab nahi mil raha</span><span>${L(r.totals.stockDiff)}</span></div>` : ''}
+    ${V.stock ? stockForm() : ''}
     <div><p class="sec">BOY-WISE</p>${boys}</div>
+    ${r.chhutti.length ? `<div><p class="sec">AAJ CHHUTTI (${r.chhutti.length})</p><p class="rs" style="margin:0">${r.chhutti.map(esc).join(', ')}</p></div>` : ''}
     ${r.items && r.items.length ? `<div><p class="sec">SAMAN BIKA (${R(r.totals.saman)})</p>` + r.items.map(i => `<div class="li"><p>${esc(i.item)}</p><p class="rs" style="margin:0">${Math.round(i.qty * 100) / 100} ${esc(i.unit)} · ${R(i.amount)}</p></div>`).join('') + '</div>' : ''}
-    <div><p class="sec">BADLAAV</p>${ch || '<p class="rs">Is din koi badlaav nahi</p>'}</div>
-    ${r.totals.payments ? `<div class="info"><span>Is din payment mila</span><b>${R(r.totals.payments)}</b></div>` : ''}
+    <div><p class="sec">BADLAAV (location ke saath)</p>${ch || '<p class="rs">Is din koi badlaav nahi</p>'}</div>
   </div><p class="credit">${JMARK}${CREDIT}</p></div>`;
 }
+function openStock(boyId, shift) { V.stock = { boyId, shift }; render(); }
+function stockForm() {
+  const b = V.sum.boys.find(x => x.id === V.stock.boyId) || {}; const s = (b.shifts || []).find(x => x.shift === V.stock.shift) || {}; const st = s.stock || {};
+  const inp = (id, lab, v) => `<div style="flex:1"><label class="lb" for="${id}">${lab}</label><input class="in" id="${id}" type="number" inputmode="decimal" step="0.5" min="0" value="${v || ''}" placeholder="0"></div>`;
+  return `<div class="card" style="border-left-color:var(--gold);display:flex;flex-direction:column;gap:10px">
+    <p style="margin:0;font-weight:700">${esc(b.name)} · ${V.stock.shift === 'Subh' ? '☀️ Subh' : '🌙 Sham'} ka doodh hisaab</p>
+    <p class="rs" style="margin:0">App ke hisaab se ghar mein diya: ${COW} ${L(s.cow || 0)} · ${BH} ${L(s.bh || 0)}</p>
+    <div style="display:flex;gap:10px">${inp('sc', COW + ' Gaay diya (L)', st.cow)}${inp('sb', BH + ' Bhains diya (L)', st.bh)}</div>
+    <div style="display:flex;gap:10px">${inp('rc', COW + ' wapas aaya', st.cowRet)}${inp('rb', BH + ' wapas aaya', st.bhRet)}</div>
+    <div style="display:flex;gap:10px"><button class="btn" id="stbtn" onclick="saveStock()">Save karo</button><button class="btn out" onclick="V.stock=null;render()">Band karo</button></div></div>`;
+}
+async function saveStock() {
+  const n = id => Number($('#' + id).value) || 0;
+  const b = $('#stbtn'); b.disabled = true;
+  try { await api('saveStock', { date: V.date, shift: V.stock.shift, boyId: V.stock.boyId, cow: n('sc'), bh: n('sb'), cowRet: n('rc'), bhRet: n('rb') }); toast('Doodh hisaab save'); V.stock = null; V.cache = {}; render(); }
+  catch (e) { toast(e.message); b.disabled = false; }
+}
+async function takeCash(boyId, name, pending) {
+  const v = prompt(name + ' se kitna cash liya? (baaki ' + R(pending) + ')', pending > 0 ? Math.round(pending) : ''); if (!v) return;
+  const amt = Number(v); if (!(amt > 0)) return toast('Amount galat hai');
+  try { await api('saveHandover', { boyId, amount: amt, date: V.date }); toast(name + ' se ' + R(amt) + ' cash liya'); V.cache = {}; render(); } catch (e) { toast(e.message); }
+}
+
+/* ----- owner: period + bills ----- */
+function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function monthPeriod(y, m) { return { from: ymd(new Date(y, m, 1)), to: ymd(new Date(y, m + 1, 0)) }; }
+function curPeriod() { if (!V.period) { const d = new Date(); V.period = Object.assign({ kind: 'this' }, monthPeriod(d.getFullYear(), d.getMonth())); } return V.period; }
+function setPeriod(kind) {
+  const d = new Date();
+  if (kind === 'this') V.period = Object.assign({ kind }, monthPeriod(d.getFullYear(), d.getMonth()));
+  if (kind === 'last') V.period = Object.assign({ kind }, monthPeriod(d.getFullYear(), d.getMonth() - 1));
+  if (kind === 'month') { const v = $('#pm').value; if (!v) return toast('Mahina chuno'); const [y, m] = v.split('-').map(Number); V.period = Object.assign({ kind }, monthPeriod(y, m - 1)); }
+  if (kind === 'custom') { const f = $('#pf').value, t = $('#pt').value; if (!f || !t || t < f) return toast('Dono tareekh sahi chuno'); V.period = { kind, from: f, to: t }; }
+  if (kind === 'pickmonth' || kind === 'pickcustom') { V.period = Object.assign({}, curPeriod(), { kind }); }
+  V.cache = {}; V.billId = null; render();
+}
+function periodBar() {
+  const p = curPeriod();
+  const chip = (k, t) => `<button type="button" class="chip ${p.kind === k || (k === 'pickmonth' && p.kind === 'month') || (k === 'pickcustom' && p.kind === 'custom') ? 'on' : ''}" onclick="setPeriod('${k}')">${t}</button>`;
+  return `<div class="pad" style="padding-bottom:6px;gap:8px"><div class="chips">${chip('this', 'Is mahina')}${chip('last', 'Pichhla mahina')}${chip('pickmonth', 'Mahina-saal')}${chip('pickcustom', 'Custom tareekh')}</div>
+    ${['pickmonth', 'month'].includes(p.kind) ? `<div style="display:flex;gap:8px;align-items:flex-end"><div style="flex:1"><label class="lb" for="pm">Mahina</label><input class="in" id="pm" type="month" value="${p.from.slice(0, 7)}"></div><button class="btn" style="width:auto;padding:0 18px" onclick="setPeriod('month')">Dekho</button></div>` : ''}
+    ${['pickcustom', 'custom'].includes(p.kind) ? `<div style="display:flex;gap:8px"><div style="flex:1"><label class="lb" for="pf">Se</label><input class="in" id="pf" type="date" value="${p.from}"></div><div style="flex:1"><label class="lb" for="pt">Tak</label><input class="in" id="pt" type="date" value="${p.to}"></div></div><button class="btn" onclick="setPeriod('custom')">Dekho</button>` : ''}</div>`;
+}
 function waLink(b) {
-  const text = [`Namaste ${b.name},`, `${BRAND.short} — ${b.month} ka bill`, `Kul doodh: ${L(b.litres)} — ${R(b.milkAmt)}`, ...(b.other ? [`Other saman: ${R(b.other)}`] : []), ...(b.adj ? [`Adjustment: ${R(b.adj)}`] : []), ...(b.purana ? [`Pichhla baaki: ${R(b.purana)}`] : []), `Is mahine ka bill: ${R(b.bill)}`, `Jama: ${R(b.paid)}`, `Kul baaki: ${R(b.balance)}`, `UPI: ${UPI_ID}`, '', '— Powered by Jinovate'].join('\n');
+  const text = [`Namaste ${b.name},`, `${BRAND.short} — ${b.month} ka hisaab`, `Doodh: ${L(b.litres)} — ${R(b.milkAmt)}`, ...(b.other ? [`Other saman: ${R(b.other)}`] : []), ...(b.adj ? [`Adjustment: ${R(b.adj)}`] : []), ...(b.purana ? [`Pichhla baaki: ${R(b.purana)}`] : []), `Is period ka bill: ${R(b.bill)}`, `Jama: ${R(b.paid)}`, `Kul baaki: ${R(b.balance)}`, `UPI: ${UPI_ID}`, '', '— Powered by Jinovate'].join('\n');
+  return 'https://wa.me/91' + b.mobile + '?text=' + encodeURIComponent(text);
+}
+function remindLink(b) {
+  const text = `Namaste ${b.name}, ${BRAND.short} ka aapka baaki ${R(b.balance)} hai. Kripya jaldi jama karein. UPI: ${UPI_ID}\n\n— Powered by Jinovate`;
   return 'https://wa.me/91' + b.mobile + '?text=' + encodeURIComponent(text);
 }
 async function billsView() {
-  const r = await load('bills', () => api('bills'));
-  const rows = r.bills.map(b => `<div class="row" style="cursor:default"><div style="flex:1;min-width:0"><p class="rn">${esc(b.name)}</p><p class="rs">${esc(b.address)} · ${L(b.litres)}${b.other ? ' + saman ' + R(b.other) : ''}${b.purana ? ' · pichhla ' + R(b.purana) : ''} · kul baaki ${R(b.balance)}</p></div>
-    <p class="rq" style="color:var(--ink)">${R(b.bill)}</p><button class="wa" style="background:var(--light);color:var(--b);border:0;cursor:pointer" aria-label="${esc(b.name)} ka bill dekho" onclick="openBill('${esc(b.id)}')">${svg('pdf', 22)}</button><a class="wa" href="${waLink(b)}" target="_blank" rel="noopener" aria-label="${esc(b.name)} ko WhatsApp bill bhejo">${svg('wa', 22)}</a></div>`).join('');
-  return header('Bills', r.month) + `<div class="body"><div class="strip" style="font-weight:400">
+  const p = curPeriod();
+  if (p.kind === 'pickmonth' || p.kind === 'pickcustom') return header('Bills', 'Period chuno') + `<div class="body">${periodBar()}</div>`;
+  const r = await load('bills_' + p.from + p.to, () => api('bills', { from: p.from, to: p.to }));
+  const list = V.onlyDues ? r.bills.filter(b => b.balance > 0) : r.bills;
+  const rows = list.map(b => `<div class="row" style="cursor:default"><div style="flex:1;min-width:0"><p class="rn">${esc(b.name)}</p><p class="rs">${esc(b.address)} · ${L(b.litres)}${b.purana ? ' · pichhla ' + R(b.purana) : ''} · bill ${R(b.bill)}</p>
+      ${b.balance > 0 ? `<a class="badge" style="color:var(--warn);text-decoration:none" href="${remindLink(b)}" target="_blank" rel="noopener">🔔 Yaad dilao</a>` : ''}</div>
+    <p class="rq" style="color:${b.balance > 0 ? 'var(--warn)' : 'var(--ok)'}">${R(b.balance)}</p><button class="wa" style="background:var(--light);color:var(--b);border:0;cursor:pointer" aria-label="${esc(b.name)} ka bill dekho" onclick="openBill('${esc(b.id)}')">${svg('pdf', 22)}</button><a class="wa" href="${waLink(b)}" target="_blank" rel="noopener" aria-label="${esc(b.name)} ko WhatsApp bill bhejo">${svg('wa', 22)}</a></div>`).join('');
+  V.billMsgMonth = r.month;
+  return header('Bills', r.month) + `<div class="body">${periodBar()}<div class="strip" style="font-weight:400">
     <div><p class="rs" style="margin:0">Kul bill</p><p style="margin:0;font-weight:800">${R(r.totals.bill)}</p></div>
     <div><p class="rs" style="margin:0">Jama</p><p style="margin:0;font-weight:800">${R(r.totals.paid)}</p></div>
     <div><p class="rs" style="margin:0">Kul baaki</p><p style="margin:0;font-weight:800;color:var(--warn)">${R(r.totals.balance)}</p></div></div>
-    ${r.totals.purana ? `<p class="rs" style="margin:0;padding:6px 16px;background:var(--light)">Isme pichhla baaki ${R(r.totals.purana)} shamil hai</p>` : ''}
-    ${isAdmin() ? `<div class="pad" style="padding-bottom:0"><p class="sec" style="margin:0">JINOVATE (sirf aapko dikhta hai)</p>
+    ${r.totals.purana ? `<p class="rs" style="margin:0;padding:6px 16px;background:var(--light)">Isme pichhla baaki ${R(r.totals.purana)} shamil hai. Sabse zyada baaki wale upar.</p>` : ''}
+    <label style="display:flex;align-items:center;gap:10px;padding:10px 16px;font-weight:600"><input type="checkbox" ${V.onlyDues ? 'checked' : ''} onchange="V.onlyDues=this.checked;render()" style="width:20px;height:20px"> Sirf baaki wale ghar</label>
+    ${isAdmin() ? `<div class="pad" style="padding-bottom:0"><p class="sec" style="margin:0">JINOVATE (sirf aapko dikhta hai) · ${esc(r.month)}</p>
       <button class="btn" id="onebtn" onclick="allInOne()">Sab bills ek PDF mein banao</button>
-      <button class="btn out" id="allbtn" onclick="saveAll()">Har ghar ki alag PDF Drive mein banao</button>
-      <button class="btn out" id="closebtn" onclick="closeMonth()" style="border-color:var(--warn);color:var(--warn)">Mahina band karo (baaki agle mahine mein)</button></div>` : ''}
-    ${rows || '<p class="empty">Is mahine koi bill nahi</p>'}</div>`;
+      <button class="btn out" id="allbtn" onclick="saveAll()">Har ghar ki alag PDF Drive mein banao</button></div>` : ''}
+    ${rows || '<p class="empty">Is period mein koi bill nahi</p>'}</div>`;
 }
+
+/* ----- owner: ek ghar ka bill + entries ----- */
+function openBill(id) { V.billId = id; render(); }
+async function billView() {
+  const p = curPeriod();
+  const [{ bill: d }, ent] = await Promise.all([
+    load('bill_' + V.billId + p.from + p.to, () => api('billDetail', { custId: V.billId, from: p.from, to: p.to })),
+    load('ent_' + V.billId, () => api('entries', { custId: V.billId }))]);
+  const row = (a, b, bold) => `<div class="li"><p style="${bold ? 'font-weight:700' : 'color:var(--mut)'}">${a}</p><p style="font-weight:${bold ? 700 : 600}">${b}</p></div>`;
+  const milk = d.lines.map(l => row(`${l.type === 'Cow' ? COW + ' Gaay' : BH + ' Bhains'}: ${l.litres} L × ${R(l.rate)}`, R(l.amount))).join('') + (d.chhuttiDays ? row('Chhutti ke din', d.chhuttiDays + ' din') : '') + row(`Kul doodh ${d.litres} L`, R(d.milkAmt), true);
+  const items = d.items.length ? `<p class="sec">OTHER SAMAN</p>` + d.items.map(i => row(`${esc(i.item)}: ${Math.round(i.qty * 100) / 100} ${esc(i.unit)} × ${R(i.rate)}`, R(i.amount))).join('') + row('Kul saman', R(d.other), true) : '';
+  const adjs = d.adjItems.length ? `<p class="sec">ADJUSTMENT</p>` + d.adjItems.map(a => row(esc(a.type) + (a.note ? ': ' + esc(a.note) : ''), (a.amount < 0 ? '- ' : '') + R(Math.abs(a.amount)))).join('') : '';
+  V.billMsg = d;
+  return header('Bill', d.month, "V.billId=null;render()") + `<div class="body"><div class="pad" id="billbox">
+    <div style="display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--b);padding-bottom:12px"><img class="logo" src="logo-256.png" alt="" style="width:58px;height:58px;margin:0;box-shadow:none">
+      <div><p style="margin:0;font-weight:800">${BRAND.full}</p><p class="rs">${BRAND.addr}</p><p class="rs">Doodh bill — ${esc(d.month)}</p></div></div>
+    <div style="display:flex;justify-content:space-between"><div><p class="rs" style="margin:0">Bill to</p><p style="margin:0;font-weight:700">${esc(d.name)}</p><p style="margin:0">${esc(d.address)}</p></div><div style="text-align:right"><p class="rs" style="margin:0">Customer ID</p><p style="margin:0;font-weight:700">${esc(d.id)}</p></div></div>
+    <div><p class="sec">DOODH</p>${milk}</div>${items ? '<div>' + items + '</div>' : ''}${adjs ? '<div>' + adjs + '</div>' : ''}
+    <div class="info" style="flex-direction:column;gap:6px">${d.purana ? `<div style="display:flex;justify-content:space-between"><span>Pichhla baaki</span><b>${R(d.purana)}</b></div>` : ''}<div style="display:flex;justify-content:space-between"><span>Is period ka bill</span><b>${R(d.bill)}</b></div><div style="display:flex;justify-content:space-between"><span>Jama</span><b>${R(d.paid)}</b></div><div style="display:flex;justify-content:space-between;font-size:18px"><b>Kul baaki</b><b>${R(d.balance)}</b></div></div>
+    ${d.upto < d.to ? `<p class="rs" style="margin:0">Doodh ${showDate(d.upto)} tak joda gaya hai.</p>` : ''}
+    ${d.payments.length ? `<p class="rs" style="margin:0">Jama: ${d.payments.map(p => showDate(p.date) + ' ' + R(p.amount) + ' (' + esc(p.mode) + ')').join(', ')}</p>` : ''}
+    <p style="margin:0;font-size:14px">Payment: UPI ${esc(UPI_ID)} ya delivery boy ko cash.</p>
+    <p class="credit" style="margin-top:8px">${JMARK}Billing system by Jinovate · jinovate.com</p>
+  </div>
+  <div class="pad" style="padding-top:0"><button class="btn" id="pdfbtn" onclick="sharePdf()">PDF share / download karo</button>
+    <a class="btn out" style="text-align:center;text-decoration:none;display:block" href="${waLink(d)}" target="_blank" rel="noopener">WhatsApp bill bhejo</a>
+    <button class="btn out" onclick="sendCustLink('${esc(d.id)}')">🔗 Customer ko apna hisaab ka link bhejo</button>
+    ${ent.hasLoc ? `<a class="btn out" style="text-align:center;text-decoration:none;display:block" href="${mapLink(ent.lat, ent.lng)}" target="_blank" rel="noopener">📍 Ghar map pe dekho</a>` : '<p class="rs" style="margin:0">📍 Ghar ki location abhi save nahi (boy Badlaav screen se save karega).</p>'}</div>
+  <div class="pad" style="border-top:8px solid var(--light)">
+    <p class="sec" style="margin:0">OWNER ENTRY (haath se)</p>
+    <div class="chips" id="etype">${[['Purana baaki', 'Purana baaki'], ['Payment', 'Payment mila'], ['Extra charge', 'Extra charge'], ['Chhoot', 'Chhoot / discount']].map(([k, l], i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" data-k="${k}" onclick="document.querySelectorAll('#etype .chip').forEach(x=>x.classList.toggle('on',x===this));document.getElementById('emode').style.display=this.dataset.k==='Payment'?'flex':'none'">${l}</button>`).join('')}</div>
+    <div class="chips" id="emode" style="display:none">${['Cash', 'UPI', 'Bank'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#emode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="eamt">Amount (₹)</label><input class="in" id="eamt" type="number" inputmode="decimal" min="1" placeholder="Amount"></div>
+      <div style="flex:1"><label class="lb" for="edate">Tareekh</label><input class="in" id="edate" type="date" value="${todayStr()}"></div></div>
+    <div><label class="lb" for="enote">Note (zaroori nahi)</label><input class="in" id="enote" maxlength="120" placeholder="Jaise: October tak ka baaki"></div>
+    <button class="btn" id="ebtn" onclick="saveOwnerEntry()">Entry save karo</button>
+    <p class="rs" style="margin:0">Purana baaki = system shuru hone se pehle ka bacha paisa. Chhoot ghatata hai, Extra charge badhata hai.</p>
+    <p class="sec">CHHUTTI (doodh band)</p>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="cf">Kab se</label><input class="in" id="cf" type="date" value="${todayStr()}"></div><div style="flex:1"><label class="lb" for="ct">Kab tak</label><input class="in" id="ct" type="date" value="${todayStr()}"></div></div>
+    <button class="btn out" onclick="saveChhutti('${esc(d.id)}')">Chhutti save karo</button>
+    ${ent.chhutti.map(c => `<div class="li"><p style="margin:0">${showDate(c.from)} se ${showDate(c.to)}${c.note ? ' · ' + esc(c.note) : ''}</p><button class="chip" onclick="delChhutti('${esc(c.id)}')">Hatao</button></div>`).join('')}
+    ${ent.entries.length || ent.payments.length ? `<p class="sec">PICHHLI ENTRIES</p>` + ent.entries.map(e => `<div class="li"><div><p style="font-weight:600">${esc(e.type)} · ${(e.amount < 0 ? '- ' : '') + R(Math.abs(e.amount))}</p><p class="rs">${showDate(e.date)}${e.note ? ' · ' + esc(e.note) : ''} · ${esc(e.by)}</p></div><button class="chip" onclick="delOwnerEntry('${esc(e.id)}')">Hatao</button></div>`).join('')
+      + ent.payments.map(p => `<div class="li"><div><p style="font-weight:600">Payment · ${R(p.amount)} (${esc(p.mode)})</p><p class="rs">${showDate(p.date)} · ${esc(p.by)}</p></div><div>${farTxt(p.far)}</div></div>`).join('') : ''}
+  </div></div>`;
+}
+async function saveOwnerEntry() {
+  const k = (document.querySelector('#etype .chip.on') || {}).dataset.k;
+  const amt = Number($('#eamt').value), date = $('#edate').value, note = $('#enote').value.trim();
+  if (!(amt > 0)) return toast('Amount daalo');
+  if (!date) return toast('Tareekh chuno');
+  const b = $('#ebtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  try {
+    if (k === 'Payment') {
+      const mode = (document.querySelector('#emode .chip.on') || {}).textContent || 'Cash';
+      await api('savePayment', { custId: V.billId, date, amount: amt, mode });
+    } else await api('ownerEntry', { custId: V.billId, type: k, amount: amt, date, note });
+    toast(R(amt) + ' ki entry save ho gayi');
+    V.cache = {}; render();
+  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Entry save karo'; }
+}
+async function delOwnerEntry(id) {
+  if (!confirm('Ye entry hatani hai?')) return;
+  try { await api('deleteEntry', { id }); toast('Entry hata di'); V.cache = {}; render(); } catch (e) { toast(e.message); }
+}
+async function delChhutti(id) {
+  if (!confirm('Ye chhutti hatani hai?')) return;
+  try { await api('deleteChhutti', { id }); toast('Chhutti hata di'); V.cache = {}; render(); } catch (e) { toast(e.message); }
+}
+async function sendCustLink(id) {
+  try {
+    const r = await api('custLink', { custId: id });
+    const d = V.billMsg, url = location.origin + location.pathname + '?c=' + r.key;
+    const text = `Namaste ${d.name}, ${BRAND.short} mein aapka doodh ka roz ka hisaab aur baaki is link pe dekh sakte hain:\n${url}\n\n— Powered by Jinovate`;
+    window.open('https://wa.me/91' + d.mobile + '?text=' + encodeURIComponent(text), '_blank');
+  } catch (e) { toast(e.message); }
+}
+
+/* ----- owner: rate ----- */
+async function ratesView() {
+  const r = await load('rates', () => api('rates'));
+  return header('Doodh ka rate', 'Tareekh se rate', "go('aaj')") + `<div class="body"><div class="pad">
+    <p class="rs" style="margin:0">Naya rate jis tareekh se lagu ho, wahi daalo. Usse pehle ke din purane rate se hi bill banenge.</p>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="rf">Kab se</label><input class="in" id="rf" type="date" value="${todayStr()}"></div></div>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="rc">${COW} Gaay ₹/L</label><input class="in" id="rc" type="number" inputmode="decimal" min="1"></div><div style="flex:1"><label class="lb" for="rb">${BH} Bhains ₹/L</label><input class="in" id="rb" type="number" inputmode="decimal" min="1"></div></div>
+    <button class="btn" id="rbtn" onclick="saveRate()">Naya rate save karo</button>
+    <p class="sec">RATE KI LIST</p>
+    ${r.rates.map(x => `<div class="li"><p style="margin:0">${showDate(x.from)} se</p><p style="margin:0;font-weight:700">${COW} ${R(x.cow)} · ${BH} ${R(x.bh)}</p></div>`).join('') || '<p class="rs">Abhi koi rate nahi</p>'}
+  </div></div>`;
+}
+async function saveRate() {
+  const from = $('#rf').value, cow = Number($('#rc').value), bh = Number($('#rb').value);
+  if (!from || !(cow > 0) || !(bh > 0)) return toast('Tareekh aur dono rate daalo');
+  if (!confirm(showDate(from) + ' se Gaay ' + R(cow) + ', Bhains ' + R(bh) + ' — save karna hai?')) return;
+  try { await api('addRate', { from, cow, bh }); toast('Rate save ho gaya'); V.cache = {}; render(); } catch (e) { toast(e.message); }
+}
+
+/* ----- customer ka apna page (bina login) ----- */
+const PUBLIC_KEY = new URLSearchParams(location.search).get('c');
+async function publicHtml() {
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'publicView', key: PUBLIC_KEY }) });
+    const j = await res.json(); if (!j.ok) throw new Error(j.error);
+    const b = j.bill;
+    return `<header class="hdr"><img class="hlogo" src="logo-256.png" alt=""><div style="flex:1"><h1>${BRAND.short}</h1><p class="sub">${esc(b.name)} · ${esc(b.month)}</p></div></header>
+    <div class="body" style="padding-bottom:20px"><div class="pad">
+      <div class="cards"><div class="card"><p class="k">Doodh (aaj tak)</p><p class="v">${L(b.litres)}</p></div><div class="card"><p class="k">Jama</p><p class="v">${R(b.paid)}</p></div><div class="card"><p class="k">Kul baaki</p><p class="v" style="color:var(--warn)">${R(b.balance)}</p></div></div>
+      ${b.purana ? `<p class="rs" style="margin:0">Isme pichhla baaki ${R(b.purana)} shamil hai.</p>` : ''}
+      <p class="sec">ROZ KA HISAAB</p>
+      <div class="li" style="font-weight:700"><span style="flex:2">Tareekh</span><span style="flex:1;text-align:center">☀️ Subh</span><span style="flex:1;text-align:center">🌙 Sham</span><span style="flex:1;text-align:right">Note</span></div>
+      ${j.days.map(d => `<div class="li"><span style="flex:2">${showDate(d.date)}</span><span style="flex:1;text-align:center">${d.subh ? L(d.subh) : '–'}</span><span style="flex:1;text-align:center">${d.sham ? L(d.sham) : '–'}</span><span style="flex:1;text-align:right" class="rs">${esc(d.note)}</span></div>`).join('')}
+      <p style="margin:0;font-size:14px">Payment: UPI ${esc(UPI_ID)} ya delivery boy ko cash.</p>
+      <p class="rs" style="margin:0">Kuch galat lage to SKDMB ko batayein.</p>
+    </div><p class="credit">${JMARK}${CREDIT}</p></div>`;
+  } catch (e) {
+    return `<div class="login"><div class="center"><img class="logo" src="logo-256.png" alt=""><p class="err" style="margin-top:20px">${esc(e.message || 'Link nahi khula')}</p></div></div>`;
+  }
+}
+
 async function changeMyPin() {
   render();
   const p = prompt('Naya 6 digit PIN daalo'); if (!p) return;
@@ -443,72 +672,12 @@ async function setupBackup(b) { b.disabled = true; b.textContent = 'Backup ho ra
 
 /* owner "Aaj" screen refreshes itself every minute */
 setInterval(() => {
-  if (!S || !isOwner() || V.tab !== 'aaj' || V.menu || V.about || document.hidden) return;
+  if (!S || !isOwner() || V.tab !== 'aaj' || V.menu || V.about || V.stock || document.hidden) return;
   delete V.cache['sum_' + V.date]; render();
 }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S && isOwner() && V.tab === 'aaj') { delete V.cache['sum_' + V.date]; render(); } });
 
-function openBill(id) { V.billId = id; render(); }
-async function saveOwnerEntry() {
-  const k = (document.querySelector('#etype .chip.on') || {}).dataset.k;
-  const amt = Number($('#eamt').value), date = $('#edate').value, note = $('#enote').value.trim();
-  if (!(amt > 0)) return toast('Amount daalo');
-  if (!date) return toast('Tareekh chuno');
-  const b = $('#ebtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
-  try {
-    if (k === 'Payment') {
-      const mode = (document.querySelector('#emode .chip.on') || {}).textContent || 'Cash';
-      await api('savePayment', { custId: V.billId, date, amount: amt, mode });
-    } else await api('ownerEntry', { custId: V.billId, type: k, amount: amt, date, note });
-    toast(R(amt) + ' ki entry save ho gayi');
-    V.cache = {}; render();
-  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Entry save karo'; }
-}
-async function delOwnerEntry(id) {
-  if (!confirm('Ye entry hatani hai?')) return;
-  try { await api('deleteEntry', { id }); toast('Entry hata di'); V.cache = {}; render(); } catch (e) { toast(e.message); }
-}
-async function closeMonth() {
-  if (!confirm('Is mahine ke sab bill band karke agla mahina shuru karna hai? Har ghar ka baaki agle mahine "Pichhla baaki" banke jayega. Pehle sab PDF bana lo.')) return;
-  const b = $('#closebtn'); b.disabled = true; b.textContent = 'Band ho raha hai…';
-  try { const r = await api('closeMonth'); toast(r.closed + ' band. Ab ' + r.next + ' chalu (' + r.customers + ' ghar)'); V.cache = {}; render(); }
-  catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Mahina band karo (baaki agle mahine mein)'; }
-}
-async function billView() {
-  const { bill: d } = await load('bill_' + V.billId, () => api('billDetail', { custId: V.billId }));
-  const row = (a, b, bold) => `<div class="li"><p style="${bold ? 'font-weight:700' : 'color:var(--mut)'}">${a}</p><p style="font-weight:${bold ? 700 : 600}">${b}</p></div>`;
-  let milk = row(`Doodh (${esc(d.milk)}): roz ${d.def} L × ${d.days} din`, (d.def * d.days) + ' L');
-  if (d.change) milk += row('Badlaav (extra / kam / ghar band)', (d.change > 0 ? '+' : '') + d.change + ' L');
-  milk += row(`Kul doodh ${d.litres} L × ${R(d.rate)}`, R(d.milkAmt), true);
-  const items = d.items.length ? `<p class="sec">OTHER SAMAN</p>` + d.items.map(i => row(`${esc(i.item)}: ${Math.round(i.qty * 100) / 100} ${esc(i.unit)} × ${R(i.rate)}`, R(i.amount))).join('') + row('Kul saman', R(d.other), true) : '';
-  const adjs = (d.adjItems || []).length ? `<p class="sec">ADJUSTMENT</p>` + d.adjItems.map(a => row(esc(a.type) + (a.note ? ': ' + esc(a.note) : ''), (a.amount < 0 ? '- ' : '') + R(Math.abs(a.amount)))).join('') : '';
-  V.billMsg = d;
-  const ent = await load('ent_' + V.billId, () => api('entries', { custId: V.billId }));
-  return header('Bill', d.month, "V.billId=null;render()") + `<div class="body"><div class="pad" id="billbox">
-    <div style="display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--b);padding-bottom:12px"><img class="logo" src="logo-256.png" alt="" style="width:58px;height:58px;margin:0;box-shadow:none">
-      <div><p style="margin:0;font-weight:800">${BRAND.full}</p><p class="rs">${BRAND.addr}</p><p class="rs">Monthly doodh bill — ${esc(d.month)}</p></div></div>
-    <div style="display:flex;justify-content:space-between"><div><p class="rs" style="margin:0">Bill to</p><p style="margin:0;font-weight:700">${esc(d.name)}</p><p style="margin:0">${esc(d.address)}</p></div><div style="text-align:right"><p class="rs" style="margin:0">Customer ID</p><p style="margin:0;font-weight:700">${esc(d.id)}</p></div></div>
-    <div><p class="sec">DOODH</p>${milk}</div>${items ? '<div>' + items + '</div>' : ''}${adjs ? '<div>' + adjs + '</div>' : ''}
-    <div class="info" style="flex-direction:column;gap:6px">${d.purana ? `<div style="display:flex;justify-content:space-between"><span>Pichhla baaki</span><b>${R(d.purana)}</b></div>` : ''}<div style="display:flex;justify-content:space-between"><span>Is mahine ka bill</span><b>${R(d.bill)}</b></div><div style="display:flex;justify-content:space-between"><span>Jama</span><b>${R(d.paid)}</b></div><div style="display:flex;justify-content:space-between;font-size:18px"><b>Kul baaki</b><b>${R(d.balance)}</b></div></div>
-    ${d.payments.length ? `<p class="rs" style="margin:0">Jama: ${d.payments.map(p => showDate(p.date) + ' ' + R(p.amount) + ' (' + esc(p.mode) + ')').join(', ')}</p>` : ''}
-    <p style="margin:0;font-size:14px">Payment: UPI ${esc(UPI_ID)} ya delivery boy ko cash.</p>
-    <p class="credit" style="margin-top:8px">${JMARK}Billing system by Jinovate · jinovate.com</p>
-  </div>
-  <div class="pad" style="padding-top:0"><button class="btn" id="pdfbtn" onclick="sharePdf()">PDF share / download karo</button>
-    <a class="btn out" style="text-align:center;text-decoration:none;display:block" href="${waLink(d)}" target="_blank" rel="noopener">WhatsApp message bhejo</a></div>
-  <div class="pad" style="border-top:8px solid var(--light)">
-    <p class="sec" style="margin:0">OWNER ENTRY (haath se)</p>
-    <div class="chips" id="etype">${[['Purana baaki', 'Purana baaki'], ['Payment', 'Payment mila'], ['Extra charge', 'Extra charge'], ['Chhoot', 'Chhoot / discount']].map(([k, l], i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" data-k="${k}" onclick="document.querySelectorAll('#etype .chip').forEach(x=>x.classList.toggle('on',x===this));document.getElementById('emode').style.display=this.dataset.k==='Payment'?'flex':'none'">${l}</button>`).join('')}</div>
-    <div class="chips" id="emode" style="display:none">${['Cash', 'UPI', 'Bank'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#emode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div>
-    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="eamt">Amount (₹)</label><input class="in" id="eamt" type="number" inputmode="decimal" min="1" placeholder="Amount"></div>
-      <div style="flex:1"><label class="lb" for="edate">Tareekh</label><input class="in" id="edate" type="date" value="${todayStr()}"></div></div>
-    <div><label class="lb" for="enote">Note (zaroori nahi)</label><input class="in" id="enote" maxlength="120" placeholder="Jaise: October tak ka baaki"></div>
-    <button class="btn" id="ebtn" onclick="saveOwnerEntry()">Entry save karo</button>
-    <p class="rs" style="margin:0">Purana baaki = pehle ka bacha hua paisa (bill mein "Pichhla baaki" banke aata hai). Chhoot ghatata hai, Extra charge badhata hai.</p>
-    ${ent.entries.length || ent.payments.length ? `<p class="sec">PICHHLI ENTRIES</p>` + ent.entries.map(e => `<div class="li"><div><p style="font-weight:600">${esc(e.type)} · ${(e.amount < 0 ? '- ' : '') + R(Math.abs(e.amount))}</p><p class="rs">${showDate(e.date)}${e.note ? ' · ' + esc(e.note) : ''} · ${esc(e.by)}</p></div><button class="chip" onclick="delOwnerEntry('${esc(e.id)}')">Hatao</button></div>`).join('')
-      + ent.payments.map(p => `<div class="li"><div><p style="font-weight:600">Payment · ${R(p.amount)} (${esc(p.mode)})</p><p class="rs">${showDate(p.date)} · ${esc(p.by)}</p></div></div>`).join('') : ''}
-  </div></div>`;
-}
+
 /* small built-in PDF writer (used in demo mode, and as a fallback) */
 function makeBillPdf(d) {
   const W = 420, H = 595, ops = [];
@@ -563,7 +732,7 @@ async function sharePdf() {
   try {
     const d = V.billMsg;
     if (DEMO) { await deliverFile(makeBillPdf(d), `${d.id} ${d.name} - ${d.month}.pdf`); return; }
-    const r = await api('billPdf', { custId: V.billId });
+    const p = curPeriod(); const r = await api('billPdf', { custId: V.billId, from: p.from, to: p.to });
     const bytes = Uint8Array.from(atob(r.base64), c => c.charCodeAt(0));
     await deliverFile(new Blob([bytes], { type: 'application/pdf' }), r.name);
   } catch (e) { if (e.name !== 'AbortError') toast(e.message); }
@@ -571,19 +740,19 @@ async function sharePdf() {
 }
 async function allInOne() {
   if (DEMO) return toast('Demo mein PDF nahi banti; asli app mein Drive mein banegi');
-  if (!confirm('Is mahine ke sab bills ek PDF mein banane hain?')) return;
+  const p = curPeriod(); if (!confirm(V.billMsgMonth + ' ke sab bills ek PDF mein banane hain?')) return;
   const b = $('#onebtn'); b.disabled = true; b.textContent = 'PDF ban rahi hai… (1-2 minute)';
-  try { const r = await api('allBillsPdf'); toast(r.count + ' bills ki PDF ban gayi'); window.open(r.url, '_blank'); }
+  try { const r = await api('allBillsPdf', { from: p.from, to: p.to }); toast(r.count + ' bills ki PDF ban gayi'); window.open(r.url, '_blank'); }
   catch (e) { toast(e.message); }
   finally { b.disabled = false; b.textContent = 'Sab bills ek PDF mein banao'; }
 }
 async function saveAll() {
   if (DEMO) return toast('Demo mein PDF nahi banti; asli app mein Drive mein banegi');
-  if (!confirm('Is mahine ke sab bills ki PDF Drive ke folder mein banani hai?')) return;
+  const p = curPeriod(); if (!confirm(V.billMsgMonth + ' ke sab bills ki PDF Drive ke folder mein banani hai?')) return;
   const b = $('#allbtn'); b.disabled = true;
   try {
     let off = 0, r;
-    do { b.textContent = 'PDF ban rahi hain… ' + off; r = await api('saveAllBills', { offset: off }); off = r.next; } while (r.next !== null && r.next !== undefined);
+    do { b.textContent = 'PDF ban rahi hain… ' + off; r = await api('saveAllBills', { offset: off, from: p.from, to: p.to }); off = r.next; } while (r.next !== null && r.next !== undefined);
     toast(r.total + ' bills ki PDF Drive mein save ho gayi');
   } catch (e) { toast(e.message); }
   finally { b.disabled = false; b.textContent = 'Har ghar ki alag PDF Drive mein banao'; }
@@ -591,7 +760,7 @@ async function saveAll() {
 function aboutView() {
   return header('About', '', "V.about=false;render()") + `<div class="body"><div class="pad" style="gap:22px;padding-top:24px">
     <div style="display:flex;gap:14px;align-items:center"><img class="logo" src="logo-256.png" alt="" style="width:72px;height:72px;margin:0">
-    <div><h1 style="margin:0;font-size:22px">${BRAND.short}</h1><p class="rs">Version 1.0</p></div></div>
+    <div><h1 style="margin:0;font-size:22px">${BRAND.short}</h1><p class="rs">Version 2.0</p></div></div>
     <div><p style="margin:0;font-weight:600">${BRAND.full}</p><p class="rs">Daily doodh delivery, payment entry aur monthly billing.</p></div>
     <div style="border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:6px">
       <p style="margin:0;font-weight:600">${JMARK}${CREDIT}</p>
@@ -606,6 +775,7 @@ const OWNER_NAV = [['aaj', 'Aaj', 'sum'], ['bills', 'Bills', 'bill'], ['route', 
 let renderSeq = 0;
 async function render() {
   const app = $('#app');
+  if (PUBLIC_KEY) { app.innerHTML = '<div class="spin"></div>'; app.innerHTML = await publicHtml(); return; }
   if (!S) { app.innerHTML = loginHtml(); return; }
   if (!V.tab) V.tab = isOwner() ? 'aaj' : 'route';
   const seq = ++renderSeq;
@@ -614,7 +784,7 @@ async function render() {
   app.innerHTML = header('…') + '<div class="body"><div class="spin" role="status" aria-label="Load ho raha hai"></div></div>' + navHtml;
   try {
     if (V.billId && V.tab === 'bills') { const html = await billView(); if (seq === renderSeq) app.innerHTML = html + navHtml + (V.menu ? menuHtml() : ''); return; }
-    const views = { staff: staffView, route: routeView, change: changeView, saman: samanView, payment: paymentView, aaj: aajView, bills: billsView };
+    const views = { rates: ratesView, staff: staffView, route: routeView, change: changeView, saman: samanView, payment: paymentView, aaj: aajView, bills: billsView };
     const html = await (views[V.tab] || routeView)();
     if (seq !== renderSeq) return;
     app.innerHTML = html + navHtml + (V.menu ? menuHtml() : '');
