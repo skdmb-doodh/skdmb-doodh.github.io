@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F74B5">
+<meta name="description" content="SKDMB Doodh — Shree Krishna Doodh Mishthan Bhandaar">
+<title>SKDMB Doodh</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SKDMB Doodh">
+<style>
+:root{--b:#2F74B5;--bd:#1F5A93;--light:#EAF4FD;--ink:#1F2A37;--mut:#5B6673;--line:#E3EAF2;--grey:#6B7280;--warn:#B54708;--ok:#15803D;--field:#C9D5E2}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#F5F9FD;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+#app{max-width:520px;margin:0 auto;min-height:100%;background:#fff;display:flex;flex-direction:column;position:relative}
+button,input,select{font:inherit;color:inherit}
+.hdr{background:var(--b);color:#fff;padding:14px 12px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:5;padding-top:calc(14px + env(safe-area-inset-top))}
+.hdr h1{margin:0;font-size:19px;font-weight:700}
+.hdr .sub{margin:2px 0 0;font-size:13px;color:#DCEAF7}
+.icon-btn{background:none;border:0;color:inherit;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:22px;cursor:pointer;flex:none}
+.icon-btn:active{background:rgba(255,255,255,.15)}
+.body{flex:1;display:flex;flex-direction:column;padding-bottom:76px}
+.strip{background:var(--light);padding:12px 16px;display:flex;justify-content:space-between;gap:8px;font-size:15px;font-weight:600}
+.pad{padding:16px;display:flex;flex-direction:column;gap:14px}
+.search{padding:10px 16px;border-bottom:1px solid var(--line)}
+input.in,select.in{width:100%;border:1px solid var(--field);border-radius:10px;padding:12px 14px;font-size:16px;background:#fff;min-height:48px}
+input.in:focus,select.in:focus{outline:2px solid var(--b);outline-offset:0;border-color:var(--b)}
+label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bottom:6px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:#fff;width:100%;text-align:left;cursor:pointer;min-height:64px}
+.row:active{background:var(--light)}
+.rn{margin:0;font-size:17px;font-weight:600}
+.rs{margin:2px 0 0;font-size:14px;color:var(--mut)}
+.rq{margin:0;font-size:17px;font-weight:700;color:var(--b);white-space:nowrap}
+.badge{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;color:var(--warn);background:#FEF3E8;border-radius:10px;padding:2px 8px}
+.btn{background:var(--b);color:#fff;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:700;min-height:52px;width:100%;cursor:pointer}
+.btn:active{background:var(--bd)}
+.btn[disabled]{opacity:.6}
+.btn.out{background:#fff;color:var(--b);border:1px solid var(--b)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1px solid var(--field);border-radius:22px;padding:10px 16px;font-size:15px;font-weight:600;min-height:44px;cursor:pointer}
+.chip.on{background:var(--b);border-color:var(--b);color:#fff}
+.qty{display:flex;gap:8px;align-items:center}
+.qty .in{text-align:center;font-size:20px;font-weight:700}
+.qbtn{width:52px;height:52px;flex:none;border-radius:12px;border:1px solid var(--field);background:#fff;font-size:24px;font-weight:700;color:var(--b);cursor:pointer}
+.info{background:var(--light);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;font-size:15px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{background:var(--light);border-radius:12px;padding:12px}
+.card p{margin:0}.card .k{font-size:12px;color:var(--mut)}.card .v{font-size:20px;font-weight:800;margin-top:2px}
+.sec{margin:6px 0 0;font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.5px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);gap:10px}
+.li p{margin:0}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#fff;border-top:1px solid var(--line);display:grid;padding-bottom:env(safe-area-inset-bottom);z-index:6}
+.nav button{background:none;border:0;padding:8px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--mut);font-size:12px;font-weight:500;min-height:60px;cursor:pointer}
+.nav button.on{color:var(--b);font-weight:700}
+.credit{margin:auto 0 0;padding:14px 16px 8px;font-size:11px;color:var(--grey);text-align:center}
+.wa{width:44px;height:44px;border-radius:22px;background:#E7F6EC;color:var(--ok);display:flex;align-items:center;justify-content:center;flex:none;text-decoration:none}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#1F2A37;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;max-width:90%;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.menu{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;display:flex}
+.menu .panel{background:#fff;width:78%;max-width:320px;height:100%;padding:calc(24px + env(safe-area-inset-top)) 0 24px;display:flex;flex-direction:column}
+.menu .who{padding:0 20px 16px;border-bottom:1px solid var(--line)}
+.menu .item{background:none;border:0;text-align:left;padding:16px 20px;font-size:16px;font-weight:600;cursor:pointer;min-height:52px}
+.login{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:32px 24px;background:linear-gradient(#EAF4FD,#fff 60%)}
+.logo{width:96px;height:96px;border-radius:24px;background:var(--b);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto;box-shadow:0 10px 30px rgba(47,116,181,.25)}
+.logo b{font-size:15px;letter-spacing:1px}
+.center{text-align:center}
+.err{color:#B42318;font-size:14px;margin:0}
+.empty{padding:32px 16px;text-align:center;color:var(--mut)}
+.spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--b);border-radius:50%;animation:sp 0.8s linear infinite;margin:40px auto}
+@media print{body *{visibility:hidden}#billbox,#billbox *{visibility:visible}#billbox{position:absolute;left:0;top:0;width:100%}}
+@keyframes sp{to{transform:rotate(360deg)}}
+.offline{background:#FEF3E8;color:var(--warn);font-size:13px;font-weight:600;padding:8px 16px;text-align:center}
+.demo{background:#FFF7D6;color:#7A5A00;font-size:12px;font-weight:600;padding:6px 16px;text-align:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============ CONFIG ============ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxEaQ9qdFevDyHL_aDLAuf1i3hjZwl3H-Lhs_83xjqS2_yjuanUGi1CIwzSX3wN3g1B/exec';            // Apps Script web app URL (…/exec). Khali = demo mode
+const UPI_ID = '[UPI ID]';      // SKDMB ka UPI ID
+const BRAND = { short: 'SKDMB Doodh', full: 'Shree Krishna Doodh Mishthan Bhandaar' };
+const CREDIT = 'Powered by Jinovate — Smart solutions for your business';
+const DEMO = false;
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const L = n => (Math.round(Number(n) * 100) / 100) + ' L';
+const R = n => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const showDate = s => { const p = String(s).split('-'); return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : s; };
+const ICON = {
+  menu: 'M4 7h16M4 12h16M4 17h16', back: 'M15 6l-6 6 6 6',
+  route: 'M3 12l9-8 9 8M5 10v10h14V10', edit: 'M4 20h4L20 8l-4-4L4 16v4z', pay: 'M3 7h18v10H3zM3 11h18',
+  sum: 'M4 20V10M10 20V4M16 20v-7M22 20H2', bill: 'M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6',
+  wa: 'M4 20l1.3-4A8 8 0 1 1 8 19z', bag: 'M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2', pdf: 'M6 2h9l5 5v15H6zM14 2v6h6M9 14h6M9 18h4', x: 'M6 6l12 12M18 6L6 18', refresh: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7'
+};
+const svg = (k, s = 24) => `<svg aria-hidden="true" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICON[k]}"/></svg>`;
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+
+/* ============ session + api ============ */
+/* storage that never crashes: falls back to memory when the browser blocks it (iframes, private mode) */
+const MEM = {};
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return k in MEM ? MEM[k] : null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { MEM[k] = v; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { delete MEM[k]; } }
+};
+let S = null; try { S = JSON.parse(store.get('skdmb_session') || 'null'); } catch (e) { S = null; }
+const saveSession = () => store.set('skdmb_session', JSON.stringify(S));
+
+async function api(action, data = {}) {
+  if (DEMO) return demoApi(action, data); // demoApi exists only in demo.html
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ action, token: S && S.token }, data)) });
+  const j = await res.json();
+  if (!j.ok) {
+    if (j.error === 'LOGIN') { logout(true); throw new Error(j.msg || 'Dobara login karo'); }
+    throw new Error(j.error || 'Kuch gadbad hui');
+  }
+  return j;
+}
+
+/* offline outbox: saves that failed for network reasons are kept and resent later */
+const outbox = () => JSON.parse(store.get('skdmb_outbox') || '[]');
+const setOutbox = q => store.set('skdmb_outbox', JSON.stringify(q));
+async function send(action, data) {
+  try { return await api(action, data); }
+  catch (e) {
+    if (!navigator.onLine || e instanceof TypeError) {
+      const q = outbox(); q.push({ action, data, at: Date.now() }); setOutbox(q);
+      return { ok: true, queued: true };
+    }
+    throw e;
+  }
+}
+async function flushOutbox() {
+  const q = outbox(); if (!q.length || !navigator.onLine || !S) return;
+  const left = [];
+  for (const item of q) {
+    try { await api(item.action, item.data); } catch (e) { if (e instanceof TypeError) left.push(item); }
+  }
+  setOutbox(left);
+  if (q.length !== left.length) toast((q.length - left.length) + ' entry bhej di gayi');
+}
+window.addEventListener('online', () => { flushOutbox(); render(); });
+window.addEventListener('offline', () => render());
+
+/* ============ state ============ */
+const V = { tab: null, date: todayStr(), cust: null, menu: false, about: false, boyId: null, cache: {} };
+function logout(silent) {
+  if (S && !DEMO && !silent) api('logout').catch(() => {});
+  S = null; store.del('skdmb_session'); Object.assign(V, { tab: null, cust: null, menu: false, about: false, cache: {} });
+  render();
+}
+const isOwner = () => S && ['Owner', 'Admin'].includes(S.user.role);
+const isAdmin = () => S && S.user.role === 'Admin';
+
+/* ============ layout pieces ============ */
+function header(title, sub, back) {
+  return `<header class="hdr">
+    <button class="icon-btn" aria-label="${back ? 'Peeche' : 'Menu'}" onclick="${back ? back : 'openMenu()'}">${svg(back ? 'back' : 'menu')}</button>
+    <div style="flex:1;min-width:0"><h1>${esc(title)}</h1>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div>
+    <button class="icon-btn" aria-label="Refresh" onclick="refresh()">${svg('refresh', 22)}</button>
+  </header>${!navigator.onLine ? '<div class="offline">Network nahi hai. Entry phone mein save hogi aur network aate hi chali jayegi.</div>' : ''}${outbox().length ? `<div class="offline">${outbox().length} entry bhejna baaki hai</div>` : ''}${DEMO ? '<div class="demo">Demo mode: sample data, sheet mein kuch save nahi hota</div>' : ''}`;
+}
+function nav(items) {
+  return `<nav class="nav" style="grid-template-columns:repeat(${items.length},minmax(0,1fr))">` + items.map(([key, label, icon]) =>
+    `<button class="${V.tab === key ? 'on' : ''}" onclick="go('${key}')">${svg(icon)}<span>${label}</span></button>`).join('') + '</nav>';
+}
+function openMenu() { V.menu = true; render(); }
+function closeMenu() { V.menu = false; render(); }
+function menuHtml() {
+  return `<div class="menu" onclick="if(event.target===this)closeMenu()"><div class="panel">
+    <div class="who"><p style="margin:0;font-size:18px;font-weight:700">${esc(S.user.name)}</p><p class="rs">${esc(S.user.role === 'Boy' ? 'Delivery boy' : S.user.role)}</p></div>
+    ${isOwner() ? `<button class="item" onclick="V.menu=false;V.about=false;V.tab='staff';render()">Staff / Login control</button>` : ''}
+    <button class="item" onclick="V.menu=false;changeMyPin()">Mera PIN badlo</button>
+    <button class="item" onclick="V.menu=false;V.about=true;render()">About</button>
+    <button class="item" onclick="logout()">Logout</button>
+  </div></div>`;
+}
+function go(tab) { V.tab = tab; V.about = false; V.billId = null; if (!['change', 'payment', 'saman'].includes(tab)) V.cust = null; render(); }
+function refresh() { V.cache = {}; flushOutbox(); render(); }
+
+/* ============ screens ============ */
+function loginHtml(err) {
+  return `<div class="login">
+    <div class="center"><div class="logo"><svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M9 2h6v3l2 3v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8l2-3z"/><path d="M7 12h10"/></svg><b>SKDMB</b></div>
+      <h1 style="margin:16px 0 4px;font-size:26px">${BRAND.short}</h1><p class="rs" style="margin:0">${BRAND.full}</p></div>
+    <form onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:14px">
+      <div><label class="lb" for="mob">Mobile number</label><input class="in" id="mob" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10 digit mobile" required></div>
+      <div><label class="lb" for="pin">PIN</label><input class="in" id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="6 digit PIN" required></div>
+      ${err ? `<p class="err">${esc(err)}</p>` : ''}
+      <button class="btn" id="lbtn">Login</button>
+    </form>
+    
+  </div>`;
+}
+async function doLogin(e) {
+  e.preventDefault();
+  const b = $('#lbtn'); b.disabled = true; b.textContent = 'Ruko…';
+  try {
+    const r = await api('login', { mobile: $('#mob').value, pin: $('#pin').value });
+    S = { token: r.token, user: r.user }; saveSession();
+    V.tab = isOwner() ? 'aaj' : 'route'; render(); flushOutbox();
+  } catch (er) { $('#app').innerHTML = loginHtml(er.message); }
+}
+
+async function load(key, fn) {
+  if (V.cache[key]) return V.cache[key];
+  const r = await fn(); V.cache[key] = r; return r;
+}
+
+/* ----- boy: route ----- */
+async function routeView() {
+  const boyId = isOwner() ? V.boyId : null;
+  if (isOwner() && !boyId) return ownerPickBoy();
+  const r = await load('route_' + (boyId || '') + V.date, () => api('route', { date: V.date, boyId }));
+  V.routeData = r;
+  const today = r.customers.reduce((s, c) => s + c.actual, 0);
+  const def = r.customers.reduce((s, c) => s + c.def, 0);
+  const rows = r.customers.map(c => {
+    let badge = '';
+    if (c.swapTo) badge = (c.swapTo === 'Buffalo' ? 'Bhains' : 'Cow') + ' doodh diya';
+    else if (c.changed) badge = c.actual === 0 ? 'Ghar band' : (c.actual > c.def ? '+' + L(c.actual - c.def) + ' extra' : (c.actual < c.def ? '−' + L(c.def - c.actual) + ' kam' : 'Note'));
+    const saman = c.salesTotal ? `<span class="badge" style="color:var(--b);background:var(--light);margin-left:4px">Saman ${R(c.salesTotal)}</span>` : '';
+    return `<button class="row" data-name="${esc((c.name + ' ' + c.address).toLowerCase())}" onclick="openChange('${esc(c.id)}')">
+      <div><p class="rn">${esc(c.name)}</p><p class="rs">${esc(c.address)} · ${esc(c.milk)}</p>${badge ? `<span class="badge">${esc(badge)}</span>` : ''}${saman}</div>
+      <p class="rq">${L(c.actual)}</p></button>`;
+  }).join('');
+  return header(isOwner() ? r.boy.name + ' ka route' : 'Mera Route', `${r.boy.name} · ${r.boy.route} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
+    + `<div class="body"><div class="strip"><span>${r.customers.length} ghar</span><span>Roz ${L(def)}</span><span>Aaj ${L(today)}</span></div>
+    <div class="search"><input class="in" type="search" placeholder="Ghar khojo…" oninput="filterRows(this.value)" aria-label="Ghar khojo"></div>
+    <div id="rows">${rows || '<p class="empty">Koi ghar nahi mila</p>'}</div>
+    <div class="pad"><button class="btn" onclick="openChange()">+ Badlaav daalo</button></div></div>`;
+}
+function filterRows(q) { q = q.toLowerCase(); document.querySelectorAll('#rows .row').forEach(r => r.style.display = r.dataset.name.includes(q) ? '' : 'none'); }
+function openChange(id) { V.cust = id || null; V.tab = 'change'; render(); }
+
+async function ensureRoute() {
+  const boyId = isOwner() ? V.boyId : null;
+  return V.routeData || load('route_' + (boyId || '') + V.date, () => api('route', { date: V.date, boyId }));
+}
+
+/* ----- boy: change form ----- */
+async function changeView() {
+  if (isOwner() && !V.boyId) return ownerPickBoy('change');
+  const r = await ensureRoute();
+  const c = r.customers.find(x => x.id === V.cust) || null;
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
+  const kind = !c ? '' : (c.swapTo ? 'Normal' : !c.changed ? 'Normal' : c.actual === 0 ? 'Ghar band' : c.actual > c.def ? 'Extra' : c.actual < c.def ? 'Kam' : 'Normal');
+  const mt = c ? (c.swapTo || c.milk) : '';
+  return header('Badlaav daalo', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
+    <div><label class="lb" for="cust">Ghar</label><select class="in" id="cust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
+    ${c ? `
+    <div class="info"><span>Roz ki quantity</span><b>${L(c.def)} · ${c.milk === 'Buffalo' ? 'Bhains' : 'Cow'}</b></div>
+    <div><label class="lb">Aaj kaunsa doodh diya?</label><div class="chips" id="mtype">
+      ${[['Cow', 'Cow'], ['Buffalo', 'Bhains']].map(([v, t]) => `<button type="button" class="chip ${v === mt ? 'on' : ''}" data-v="${v}" onclick="pickType('${v}','${c.milk}')">${t}</button>`).join('')}
+    </div></div>
+    <div><label class="lb">Kya hua?</label><div class="chips" id="kind">
+      ${['Normal', 'Ghar band', 'Extra', 'Kam'].map(k => `<button type="button" class="chip ${k === kind ? 'on' : ''}" onclick="pickKind('${k}',${c.def})">${k}</button>`).join('')}
+    </div></div>
+    <div><label class="lb" for="act">Aaj di (litre)</label><div class="qty">
+      <button type="button" class="qbtn" aria-label="Kam karo" onclick="stepQty(-0.5)">−</button>
+      <input class="in" id="act" type="number" inputmode="decimal" step="0.5" min="0" value="${c.actual}">
+      <button type="button" class="qbtn" aria-label="Zyada karo" onclick="stepQty(0.5)">+</button></div></div>
+    <div><label class="lb" for="rem">Remark (optional)</label><input class="in" id="rem" maxlength="100" value="${esc(c.remark)}" placeholder="Jaise: ghar pe taala, mehmaan aaye"></div>
+    <button class="btn" id="sbtn" onclick="saveChange('${esc(c.id)}')">Save karo</button>` : '<p class="rs">Upar se ghar chuno.</p>'}
+  </div></div>`;
+}
+function pickKind(k, def) {
+  const a = $('#act');
+  if (k === 'Normal') { a.value = def; $('#rem').value = ''; }
+  if (k === 'Ghar band') { a.value = 0; if (!$('#rem').value) $('#rem').value = 'Ghar band'; }
+  if (k === 'Extra') a.value = def + 0.5;
+  if (k === 'Kam') a.value = Math.max(0, def - 0.5);
+  document.querySelectorAll('#kind .chip').forEach(b => b.classList.toggle('on', b.textContent === k));
+}
+function pickType(v, base) {
+  document.querySelectorAll('#mtype .chip').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  const r = $('#rem'); if (v === base && /^Doodh badla/.test(r.value)) r.value = '';
+}
+function stepQty(d) { const a = $('#act'); a.value = Math.max(0, (Number(a.value) || 0) + d); }
+async function saveChange(id) {
+  const b = $('#sbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  try {
+    const milkType = (document.querySelector('#mtype .chip.on') || {}).dataset?.v;
+    const r = await send('saveChange', { custId: id, date: V.date, actual: Number($('#act').value), remark: $('#rem').value.trim(), boyId: V.boyId, milkType });
+    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Save ho gaya');
+    const rd = await ensureRoute(); const c = rd.customers.find(x => x.id === id);
+
+    V.cache = {}; V.routeData = null; V.cust = null; go('route');
+  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+}
+
+/* ----- boy: saman (other items) ----- */
+async function samanView() {
+  if (isOwner() && !V.boyId) return ownerPickBoy('saman');
+  const [r, it] = await Promise.all([ensureRoute(), load('items', () => api('items'))]);
+  V.items = it.items;
+  const c = r.customers.find(x => x.id === V.cust) || null;
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
+  const cats = [...new Set(it.items.filter(i => i.cat !== 'Doodh').map(i => i.cat))];
+  const itemOpts = cats.map(cat => `<optgroup label="${esc(cat)}">` + it.items.filter(i => i.cat === cat).map(i => `<option value="${esc(i.id)}" ${i.id === V.item ? 'selected' : ''}>${esc(i.name)} — ${R(i.rate)}/${esc(i.unit)}</option>`).join('') + '</optgroup>').join('');
+  const today = c && c.sales.length ? `<div><p class="sec">AAJ IS GHAR KO DIYA</p>` + c.sales.map(x => `<div class="li"><div><p style="font-weight:600">${esc(x.item)}</p><p class="rs">${x.qty} ${esc(x.unit)} × ${R(x.rate)}</p></div><div style="display:flex;align-items:center;gap:6px"><b>${R(x.amount)}</b><button class="icon-btn" style="color:#B42318" aria-label="${esc(x.item)} hatao" onclick="delSale('${esc(x.id)}')">${svg('x', 20)}</button></div></div>`).join('') + `<div class="info" style="margin-top:10px"><span>Kul saman</span><b>${R(c.salesTotal)}</b></div></div>` : '';
+  const sel = V.items.find(i => i.id === V.item);
+  return header('Saman diya', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
+    <div><label class="lb" for="scust">Ghar</label><select class="in" id="scust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
+    ${c ? `
+    <div><label class="lb" for="sitem">Kya diya?</label><select class="in" id="sitem" onchange="V.item=this.value;updAmt()"><option value="">Item chuno…</option>${itemOpts}</select></div>
+    <div><label class="lb" for="sqty">Kitna (<span id="sunit">${sel ? esc(sel.unit) : 'qty'}</span>)</label><div class="qty">
+      <button type="button" class="qbtn" aria-label="Kam karo" onclick="stepS(-1)">−</button>
+      <input class="in" id="sqty" type="number" inputmode="decimal" step="0.25" min="0" value="1" oninput="updAmt()">
+      <button type="button" class="qbtn" aria-label="Zyada karo" onclick="stepS(1)">+</button></div></div>
+    <div class="info"><span>Amount</span><b id="samt">${sel ? R(sel.rate) : '—'}</b></div>
+    <label style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;min-height:44px"><input type="checkbox" id="spaid" style="width:22px;height:22px" onchange="$('#smode').style.display=this.checked?'flex':'none'"> Paisa abhi mil gaya</label>
+    <div class="chips" id="smode" style="display:none">${['Cash', 'UPI'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#smode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div>
+    <button class="btn" id="ssbtn" onclick="saveSale('${esc(c.id)}')">Save karo</button>
+    ${today}` : '<p class="rs">Upar se ghar chuno.</p>'}
+  </div></div>`;
+}
+function updAmt() {
+  const i = (V.items || []).find(x => x.id === $('#sitem').value); const q = Number($('#sqty').value) || 0;
+  $('#sunit').textContent = i ? i.unit : 'qty'; $('#samt').textContent = i ? R(i.rate * q) : '—';
+}
+function stepS(d) { const i = (V.items || []).find(x => x.id === $('#sitem').value); const st = i && (i.unit === 'kg' || i.unit === 'L') ? 0.25 : 1; const a = $('#sqty'); a.value = Math.max(0, (Number(a.value) || 0) + d * st); updAmt(); }
+async function saveSale(custId) {
+  const itemId = $('#sitem').value, qty = Number($('#sqty').value);
+  if (!itemId) return toast('Item chuno'); if (!(qty > 0)) return toast('Quantity daalo');
+  const paidNow = $('#spaid').checked; const mode = (document.querySelector('#smode .chip.on') || {}).textContent || 'Cash';
+  const b = $('#ssbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  try {
+    const r = await send('saveSale', { custId, itemId, qty, paidNow, mode, date: V.date });
+    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Saman save ho gaya' + (paidNow ? ', payment bhi' : ''));
+    V.cache = {}; V.routeData = null; V.item = null; render();
+  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+}
+async function delSale(id) {
+  if (!confirm('Ye entry hatani hai?')) return;
+  try { await api('deleteSale', { saleId: id }); toast('Entry hata di'); V.cache = {}; V.routeData = null; render(); } catch (e) { toast(e.message); }
+}
+
+/* ----- boy: payment ----- */
+async function paymentView() {
+  if (isOwner() && !V.boyId) return ownerPickBoy('payment');
+  const r = await ensureRoute();
+  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${x.id === V.cust ? 'selected' : ''}>${esc(x.name)} · ${esc(x.address)}</option>`).join('');
+  let info = '';
+  if (V.cust) {
+    const c = await load('cust_' + V.cust, () => api('customer', { custId: V.cust }));
+    info = `<div class="info"><span>${esc(c.month || 'Is mahine')} ka bill</span><b>${R(c.bill)}</b></div>
+      ${c.other ? `<p class="rs" style="margin:-6px 2px 0">Doodh ${R(c.milkAmt)} + saman ${R(c.other)}</p>` : ''}
+      <div class="info" style="background:#fff;padding:0 2px"><span>Jama</span><b>${R(c.paid)}</b></div>
+      <div class="info" style="background:#fff;padding:0 2px"><span>Baaki</span><b style="color:var(--warn);font-size:18px">${R(c.balance)}</b></div>
+      <div><label class="lb" for="amt">Kitna mila (₹)</label><input class="in" id="amt" type="number" inputmode="numeric" min="1" placeholder="Amount"></div>
+      <div><label class="lb">Kaise mila?</label><div class="chips" id="mode">${['Cash', 'UPI', 'Bank'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#mode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div></div>
+      <button class="btn" id="pbtn" onclick="savePayment()">Save karo</button>`;
+  }
+  return header('Payment entry', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
+    <div><label class="lb" for="pcust">Ghar</label><select class="in" id="pcust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
+    ${info || '<p class="rs">Upar se ghar chuno.</p>'}</div></div>`;
+}
+async function savePayment() {
+  const amt = Number($('#amt').value);
+  if (!(amt > 0)) return toast('Amount daalo');
+  const mode = (document.querySelector('#mode .chip.on') || {}).textContent || 'Cash';
+  const b = $('#pbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  try {
+    const r = await send('savePayment', { custId: V.cust, date: V.date, amount: amt, mode });
+    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : R(amt) + ' ' + mode + ' save ho gaya');
+    delete V.cache['cust_' + V.cust]; render();
+  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+}
+
+/* ----- owner ----- */
+async function ownerPickBoy(next) {
+  const r = await load('boys', () => api('boys'));
+  return header('Boy chuno', 'Kiska route dekhna hai?') + `<div class="body">` + r.boys.map(b =>
+    `<button class="row" onclick="V.boyId='${esc(b.id)}';V.routeData=null;V.tab='${next || 'route'}';render()"><div><p class="rn">${esc(b.name)}</p><p class="rs">${esc(b.route)}</p></div><p class="rq">›</p></button>`).join('') + '</div>';
+}
+async function aajView() {
+  const r = await load('sum_' + V.date, () => api('ownerSummary', { date: V.date }));
+  const boys = r.boys.map(b => `<div class="li"><div><p style="font-weight:600">${esc(b.name)}</p><p class="rs">${esc(b.route)} · ${b.skipped ? b.skipped + ' chhoote' : 'sab ghar'}${b.saman ? ' · saman ' + R(b.saman) : ''}${b.cash ? ' · cash ' + R(b.cash) : ''}</p></div><p class="rq">${L(b.total)}</p></div>`).join('');
+  const ch = r.changes.map(c => `<div class="li"><p>${esc(c.name)}</p><p class="rs" style="margin:0">${/^Doodh badla/.test(c.remark) ? esc(c.remark.replace(/^Doodh badla: /, '')) : c.actual === 0 ? 'Ghar band' : (c.actual > c.def ? '+' + L(c.actual - c.def) + ' extra' : c.actual < c.def ? '−' + L(c.def - c.actual) + ' kam' : esc(c.remark))}</p></div>`).join('');
+  const upd = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  return header('Aaj', showDate(r.date) + ' · update ' + upd + ' (har minute)') + `<div class="body"><div class="pad">
+    ${r.alerts ? `<button class="info" style="border:0;background:#FEE4E2;color:#B42318;font-weight:700;cursor:pointer;text-align:left" onclick="go('staff')"><span>Aaj ${r.alerts} galat PIN koshish</span><span>Dekho ›</span></button>` : ''}
+    <div><label class="lb" for="dt">Date</label><input class="in" id="dt" type="date" value="${V.date}" onchange="V.date=this.value;render()"></div>
+    <div class="cards"><div class="card"><p class="k">Doodh gaya</p><p class="v">${L(r.totals.total)}</p></div><div class="card"><p class="k">Ghar</p><p class="v">${r.totals.houses}</p></div><div class="card"><p class="k">Chhoote</p><p class="v">${r.totals.skipped}</p></div></div>
+    <div><p class="sec">BOY-WISE</p>${boys}</div>
+    ${r.items && r.items.length ? `<div><p class="sec">SAMAN BIKA (${R(r.totals.saman)})</p>` + r.items.map(i => `<div class="li"><p>${esc(i.item)}</p><p class="rs" style="margin:0">${Math.round(i.qty * 100) / 100} ${esc(i.unit)} · ${R(i.amount)}</p></div>`).join('') + '</div>' : ''}
+    <div><p class="sec">BADLAAV</p>${ch || '<p class="rs">Is din koi badlaav nahi</p>'}</div>
+    ${r.totals.payments ? `<div class="info"><span>Is din payment mila</span><b>${R(r.totals.payments)}</b></div>` : ''}
+  </div><p class="credit">${CREDIT}</p></div>`;
+}
+function waLink(b) {
+  const text = [`Namaste ${b.name},`, `${BRAND.short} — ${b.month} ka bill`, `Kul doodh: ${L(b.litres)} — ${R(b.milkAmt)}`, ...(b.other ? [`Other saman: ${R(b.other)}`] : []), `Bill: ${R(b.bill)}`, `Jama: ${R(b.paid)}`, `Baaki: ${R(b.balance)}`, `UPI: ${UPI_ID}`, '', '— Powered by Jinovate'].join('\n');
+  return 'https://wa.me/91' + b.mobile + '?text=' + encodeURIComponent(text);
+}
+async function billsView() {
+  const r = await load('bills', () => api('bills'));
+  const rows = r.bills.map(b => `<div class="row" style="cursor:default"><div style="flex:1;min-width:0"><p class="rn">${esc(b.name)}</p><p class="rs">${esc(b.address)} · ${L(b.litres)}${b.other ? ' + saman ' + R(b.other) : ''} · baaki ${R(b.balance)}</p></div>
+    <p class="rq" style="color:var(--ink)">${R(b.bill)}</p><button class="wa" style="background:var(--light);color:var(--b);border:0;cursor:pointer" aria-label="${esc(b.name)} ka bill dekho" onclick="openBill('${esc(b.id)}')">${svg('pdf', 22)}</button><a class="wa" href="${waLink(b)}" target="_blank" rel="noopener" aria-label="${esc(b.name)} ko WhatsApp bill bhejo">${svg('wa', 22)}</a></div>`).join('');
+  return header('Bills', r.month) + `<div class="body"><div class="strip" style="font-weight:400">
+    <div><p class="rs" style="margin:0">Kul bill</p><p style="margin:0;font-weight:800">${R(r.totals.bill)}</p></div>
+    <div><p class="rs" style="margin:0">Jama</p><p style="margin:0;font-weight:800">${R(r.totals.paid)}</p></div>
+    <div><p class="rs" style="margin:0">Baaki</p><p style="margin:0;font-weight:800;color:var(--warn)">${R(r.totals.balance)}</p></div></div>
+    ${isAdmin() ? `<div class="pad" style="padding-bottom:0"><p class="sec" style="margin:0">JINOVATE (sirf aapko dikhta hai)</p>
+      <button class="btn" id="onebtn" onclick="allInOne()">Sab bills ek PDF mein banao</button>
+      <button class="btn out" id="allbtn" onclick="saveAll()">Har ghar ki alag PDF Drive mein banao</button></div>` : ''}
+    ${rows || '<p class="empty">Is mahine koi bill nahi</p>'}</div>`;
+}
+async function changeMyPin() {
+  render();
+  const p = prompt('Naya 6 digit PIN daalo'); if (!p) return;
+  const p2 = prompt('Wahi PIN dobara daalo'); if (p !== p2) return toast('Dono PIN alag hain');
+  try { await api('setPin', { pin: p }); toast('PIN badal gaya'); } catch (e) { toast(e.message); }
+}
+async function staffView() {
+  const r = await load('users', () => api('users'));
+  const rows = r.users.map(u => `<div class="li" style="align-items:flex-start"><div style="flex:1;min-width:0"><p style="font-weight:600">${esc(u.name)} <span class="rs">· ${esc(u.role === 'Boy' ? 'Boy ' + u.boyId : u.role)}</span></p>
+    <p class="rs">${esc(u.mobile)} · ${u.active ? (u.sessions ? u.sessions + ' phone pe login' : 'login nahi') : 'band (Active = No)'}${u.locked ? ' · <b style="color:#B42318">LOCKED</b>' : ''}</p></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><button class="chip" onclick="staffLogout('${esc(u.mobile)}','${esc(u.name)}')">${u.locked ? 'Unlock' : 'Logout'}</button><button class="chip" onclick="staffPin('${esc(u.mobile)}','${esc(u.name)}')">PIN badlo</button></div></div>`).join('');
+  return header('Staff / Login', 'Kaun login hai, kisko band karna hai', "go('aaj')") + `<div class="body"><div class="pad">
+    <p class="rs" style="margin:0">Phone kho jaye ya koi kaam chhod de to "Logout" dabao: us phone se app turant band. Naya staff ya hatana ho to Users sheet mein row / Active badlo.</p>
+    <div>${rows}</div>
+    ${isAdmin() ? `<p class="sec">JINOVATE</p><button class="btn out" onclick="setupBackup(this)">Roz ka backup chalu karo / abhi backup lo</button>` : ''}
+  </div></div>`;
+}
+async function staffLogout(m, n) { if (!confirm(n + ' ko sab phones se logout / unlock karna hai?')) return; try { const r = await api('logoutUser', { mobile: m }); toast(n + ': ' + r.loggedOut + ' phone se logout'); V.cache = {}; render(); } catch (e) { toast(e.message); } }
+async function staffPin(m, n) {
+  const p = prompt(n + ' ka naya 6 digit PIN'); if (!p) return;
+  try { await api('setPin', { mobile: m, pin: p }); toast(n + ' ka PIN badal gaya. Use bata do.'); V.cache = {}; render(); } catch (e) { toast(e.message); }
+}
+async function setupBackup(b) { b.disabled = true; b.textContent = 'Backup ho raha hai…'; try { const r = await api('setupBackup'); toast('Backup: ' + r.backup + ' (roz ka trigger ' + r.trigger + ')'); } catch (e) { toast(e.message); } b.disabled = false; b.textContent = 'Roz ka backup chalu karo / abhi backup lo'; }
+
+/* owner "Aaj" screen refreshes itself every minute */
+setInterval(() => {
+  if (!S || !isOwner() || V.tab !== 'aaj' || V.menu || V.about || document.hidden) return;
+  delete V.cache['sum_' + V.date]; render();
+}, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S && isOwner() && V.tab === 'aaj') { delete V.cache['sum_' + V.date]; render(); } });
+
+function openBill(id) { V.billId = id; render(); }
+async function billView() {
+  const { bill: d } = await load('bill_' + V.billId, () => api('billDetail', { custId: V.billId }));
+  const row = (a, b, bold) => `<div class="li"><p style="${bold ? 'font-weight:700' : 'color:var(--mut)'}">${a}</p><p style="font-weight:${bold ? 700 : 600}">${b}</p></div>`;
+  let milk = row(`Doodh (${esc(d.milk)}): roz ${d.def} L × ${d.days} din`, (d.def * d.days) + ' L');
+  if (d.change) milk += row('Badlaav (extra / kam / ghar band)', (d.change > 0 ? '+' : '') + d.change + ' L');
+  milk += row(`Kul doodh ${d.litres} L × ${R(d.rate)}`, R(d.milkAmt), true);
+  const items = d.items.length ? `<p class="sec">OTHER SAMAN</p>` + d.items.map(i => row(`${esc(i.item)}: ${Math.round(i.qty * 100) / 100} ${esc(i.unit)} × ${R(i.rate)}`, R(i.amount))).join('') + row('Kul saman', R(d.other), true) : '';
+  V.billMsg = d;
+  return header('Bill', d.month, "V.billId=null;render()") + `<div class="body"><div class="pad" id="billbox">
+    <div style="display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--b);padding-bottom:12px"><div class="logo" style="width:52px;height:52px;border-radius:12px;margin:0"><b style="font-size:11px">SKDMB</b></div>
+      <div><p style="margin:0;font-weight:800">${BRAND.full}</p><p class="rs">Monthly doodh bill — ${esc(d.month)}</p></div></div>
+    <div style="display:flex;justify-content:space-between"><div><p class="rs" style="margin:0">Bill to</p><p style="margin:0;font-weight:700">${esc(d.name)}</p><p style="margin:0">${esc(d.address)}</p></div><div style="text-align:right"><p class="rs" style="margin:0">Customer ID</p><p style="margin:0;font-weight:700">${esc(d.id)}</p></div></div>
+    <div><p class="sec">DOODH</p>${milk}</div>${items ? '<div>' + items + '</div>' : ''}
+    <div class="info" style="flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between"><span>Bill amount</span><b>${R(d.bill)}</b></div><div style="display:flex;justify-content:space-between"><span>Jama</span><b>${R(d.paid)}</b></div><div style="display:flex;justify-content:space-between;font-size:18px"><b>Baaki</b><b>${R(d.balance)}</b></div></div>
+    ${d.payments.length ? `<p class="rs" style="margin:0">Jama: ${d.payments.map(p => showDate(p.date) + ' ' + R(p.amount) + ' (' + esc(p.mode) + ')').join(', ')}</p>` : ''}
+    <p style="margin:0;font-size:14px">Payment: UPI ${esc(UPI_ID)} ya delivery boy ko cash.</p>
+    <p class="credit" style="margin-top:8px">Billing system by Jinovate · jinovate.com</p>
+  </div>
+  <div class="pad" style="padding-top:0"><button class="btn" id="pdfbtn" onclick="sharePdf()">PDF share / download karo</button>
+    <a class="btn out" style="text-align:center;text-decoration:none;display:block" href="${waLink(d)}" target="_blank" rel="noopener">WhatsApp message bhejo</a></div></div>`;
+}
+/* small built-in PDF writer (used in demo mode, and as a fallback) */
+function makeBillPdf(d) {
+  const W = 420, H = 595, ops = [];
+  const clean = t => String(t).replace(/₹/g, 'Rs.').replace(/×/g, 'x').replace(/[—–]/g, '-').replace(/·/g, '-').replace(/[^\x20-\x7E]/g, '').replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  const rgb = h => [1, 3, 5].map(i => (parseInt(h.substr(i, 2), 16) / 255).toFixed(3)).join(' ');
+  const text = (x, y, t, size = 10, bold = false, color = '#1F2A37', align = 'left') => {
+    const w = clean(t).length * size * (bold ? 0.55 : 0.5);
+    const xx = align === 'right' ? x - w : align === 'center' ? x - w / 2 : x;
+    ops.push(`BT ${rgb(color)} rg /${bold ? 'F2' : 'F1'} ${size} Tf ${xx.toFixed(1)} ${(H - y).toFixed(1)} Td (${clean(t)}) Tj ET`);
+  };
+  const rect = (x, y, w, h, color) => ops.push(`${rgb(color)} rg ${x} ${H - y - h} ${w} ${h} re f`);
+  const line = (y, color = '#E3EAF2', wd = 0.8) => ops.push(`${rgb(color)} RG ${wd} w 30 ${H - y} m ${W - 30} ${H - y} l S`);
+  rect(30, 28, 42, 42, '#2F74B5'); text(51, 53, 'SKDMB', 8, true, '#FFFFFF', 'center');
+  text(80, 44, BRAND.full, 12, true); text(80, 60, 'Monthly doodh bill - ' + d.month, 9, false, '#5B6673');
+  line(80, '#2F74B5', 2);
+  text(30, 100, 'Bill to', 8, false, '#5B6673'); text(30, 113, d.name, 11, true); text(30, 126, d.address, 9);
+  text(W - 30, 100, 'Customer ID', 8, false, '#5B6673', 'right'); text(W - 30, 113, d.id, 11, true, '#1F2A37', 'right');
+  let y = 152;
+  const row = (a, b, bold) => { text(30, y, a, 9.5, bold, bold ? '#1F2A37' : '#5B6673'); text(W - 30, y, b, 9.5, true, '#1F2A37', 'right'); line(y + 7); y += 20; };
+  text(30, y, 'DOODH', 8.5, true, '#5B6673'); y += 16;
+  row(`Doodh (${d.milk}): roz ${d.def} L x ${d.days} din`, (d.def * d.days) + ' L');
+  if (d.change) row('Badlaav (extra / kam / ghar band)', (d.change > 0 ? '+' : '') + d.change + ' L');
+  row(`Kul doodh ${d.litres} L x ${R(d.rate)}`, R(d.milkAmt), true);
+  if (d.items.length) { y += 8; text(30, y, 'OTHER SAMAN', 8.5, true, '#5B6673'); y += 16; d.items.forEach(i => row(`${i.item}: ${Math.round(i.qty * 100) / 100} ${i.unit} x ${R(i.rate)}`, R(i.amount))); row('Kul saman', R(d.other), true); }
+  y += 8; rect(30, y, W - 60, 62, '#EAF4FD');
+  text(42, y + 18, 'Bill amount', 10); text(W - 42, y + 18, R(d.bill), 10, true, '#1F2A37', 'right');
+  text(42, y + 34, 'Jama', 10); text(W - 42, y + 34, R(d.paid), 10, true, '#1F2A37', 'right');
+  text(42, y + 52, 'Baaki', 12, true); text(W - 42, y + 52, R(d.balance), 12, true, '#1F2A37', 'right'); y += 82;
+  if (d.payments.length) { text(30, y, 'Jama: ' + d.payments.map(p => showDate(p.date) + ' ' + R(p.amount) + ' (' + p.mode + ')').join(', '), 8, false, '#5B6673'); y += 16; }
+  text(30, y, 'Payment: UPI ' + UPI_ID + ' ya delivery boy ko cash.', 9);
+  text(W / 2, H - 30, 'Billing system by Jinovate - jinovate.com', 6.5, false, '#6B7280', 'center');
+  const content = ops.join('\n');
+  const objs = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`,
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`];
+  let out = '%PDF-1.4\n'; const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  return new Blob([out], { type: 'application/pdf' });
+}
+async function deliverFile(blob, name) {
+  const dl = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('downloads').catch(() => null) : null;
+  if (dl) { try { await dl.save({ filename: name, data: blob }); toast('PDF save ho gayi'); } catch (e) { if (e.code !== 'declined') toast('PDF save nahi ho payi'); } return; }
+  const file = new File([blob], name, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+async function sharePdf() {
+  const b = $('#pdfbtn'); b.disabled = true; b.textContent = 'PDF ban rahi hai…';
+  try {
+    const d = V.billMsg;
+    if (DEMO) { await deliverFile(makeBillPdf(d), `${d.id} ${d.name} - ${d.month}.pdf`); return; }
+    const r = await api('billPdf', { custId: V.billId });
+    const bytes = Uint8Array.from(atob(r.base64), c => c.charCodeAt(0));
+    await deliverFile(new Blob([bytes], { type: 'application/pdf' }), r.name);
+  } catch (e) { if (e.name !== 'AbortError') toast(e.message); }
+  finally { b.disabled = false; b.textContent = 'PDF share / download karo'; }
+}
+async function allInOne() {
+  if (DEMO) return toast('Demo mein PDF nahi banti; asli app mein Drive mein banegi');
+  if (!confirm('Is mahine ke sab bills ek PDF mein banane hain?')) return;
+  const b = $('#onebtn'); b.disabled = true; b.textContent = 'PDF ban rahi hai… (1-2 minute)';
+  try { const r = await api('allBillsPdf'); toast(r.count + ' bills ki PDF ban gayi'); window.open(r.url, '_blank'); }
+  catch (e) { toast(e.message); }
+  finally { b.disabled = false; b.textContent = 'Sab bills ek PDF mein banao'; }
+}
+async function saveAll() {
+  if (DEMO) return toast('Demo mein PDF nahi banti; asli app mein Drive mein banegi');
+  if (!confirm('Is mahine ke sab bills ki PDF Drive ke folder mein banani hai?')) return;
+  const b = $('#allbtn'); b.disabled = true;
+  try {
+    let off = 0, r;
+    do { b.textContent = 'PDF ban rahi hain… ' + off; r = await api('saveAllBills', { offset: off }); off = r.next; } while (r.next !== null && r.next !== undefined);
+    toast(r.total + ' bills ki PDF Drive mein save ho gayi');
+  } catch (e) { toast(e.message); }
+  finally { b.disabled = false; b.textContent = 'Har ghar ki alag PDF Drive mein banao'; }
+}
+function aboutView() {
+  return header('About', '', "V.about=false;render()") + `<div class="body"><div class="pad" style="gap:22px;padding-top:24px">
+    <div style="display:flex;gap:14px;align-items:center"><div class="logo" style="width:64px;height:64px;border-radius:16px;margin:0"><b style="font-size:12px">SKDMB</b></div>
+    <div><h1 style="margin:0;font-size:22px">${BRAND.short}</h1><p class="rs">Version 1.0</p></div></div>
+    <div><p style="margin:0;font-weight:600">${BRAND.full}</p><p class="rs">Daily doodh delivery, payment entry aur monthly billing.</p></div>
+    <div style="border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:6px">
+      <p style="margin:0;font-weight:600">${CREDIT}</p>
+      <p style="margin:0">Website: <a href="https://jinovate.com" target="_blank" rel="noopener">jinovate.com</a></p>
+      <p style="margin:0">WhatsApp: <a href="https://wa.me/919351326317" target="_blank" rel="noopener">9351326317</a></p>
+    </div></div></div>`;
+}
+
+/* ============ render ============ */
+const BOY_NAV = [['route', 'Mera Route', 'route'], ['change', 'Badlaav', 'edit'], ['saman', 'Saman', 'bag'], ['payment', 'Payment', 'pay']];
+const OWNER_NAV = [['aaj', 'Aaj', 'sum'], ['bills', 'Bills', 'bill'], ['route', 'Route', 'route']];
+let renderSeq = 0;
+async function render() {
+  const app = $('#app');
+  if (!S) { app.innerHTML = loginHtml(); return; }
+  if (!V.tab) V.tab = isOwner() ? 'aaj' : 'route';
+  const seq = ++renderSeq;
+  const navHtml = nav(isOwner() ? OWNER_NAV : BOY_NAV);
+  if (V.about) { app.innerHTML = aboutView() + (V.menu ? menuHtml() : ''); return; }
+  app.innerHTML = header('…') + '<div class="body"><div class="spin" role="status" aria-label="Load ho raha hai"></div></div>' + navHtml;
+  try {
+    if (V.billId && V.tab === 'bills') { const html = await billView(); if (seq === renderSeq) app.innerHTML = html + navHtml + (V.menu ? menuHtml() : ''); return; }
+    const views = { staff: staffView, route: routeView, change: changeView, saman: samanView, payment: paymentView, aaj: aajView, bills: billsView };
+    const html = await (views[V.tab] || routeView)();
+    if (seq !== renderSeq) return;
+    app.innerHTML = html + navHtml + (V.menu ? menuHtml() : '');
+  } catch (e) {
+    if (seq !== renderSeq || !S) return;
+    app.innerHTML = header('SKDMB Doodh') + `<div class="body"><p class="empty">${esc(e instanceof TypeError ? 'Network nahi hai. Thodi der baad Refresh dabao.' : e.message)}</p></div>` + navHtml;
+  }
+}
+
+
+/* ============ start ============ */
+try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !DEMO && !/googleusercontent/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+render(); flushOutbox();
+</script>
+</body>
+</html>
