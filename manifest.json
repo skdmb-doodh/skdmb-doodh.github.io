@@ -1,16 +1,29 @@
 {
-  "name": "SKDMB Doodh",
+  "name": "SKDMB Doodh – Shree Krishna Dudh Misthan Bhandar",
   "short_name": "SKDMB Doodh",
-  "description": "Shree Krishna Doodh Mishthan Bhandaar — doodh delivery aur billing",
+  "description": "Shree Krishna Dudh Misthan Bhandar — doodh delivery aur billing",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#EAF4FD",
-  "theme_color": "#2F74B5",
+  "background_color": "#FFF4D2",
+  "theme_color": "#D7191F",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

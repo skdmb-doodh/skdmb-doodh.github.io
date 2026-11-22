@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2F74B5">
-<meta name="description" content="SKDMB Doodh — Shree Krishna Doodh Mishthan Bhandaar">
+<meta name="theme-color" content="#D7191F">
+<meta name="description" content="SKDMB Doodh — Shree Krishna Dudh Misthan Bhandar">
 <title>SKDMB Doodh</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -12,14 +12,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="SKDMB Doodh">
 <style>
-:root{--b:#2F74B5;--bd:#1F5A93;--light:#EAF4FD;--ink:#1F2A37;--mut:#5B6673;--line:#E3EAF2;--grey:#6B7280;--warn:#B54708;--ok:#15803D;--field:#C9D5E2}
+:root{--b:#D7191F;--bd:#A8121A;--light:#FFF4D2;--gold:#F5B800;--blue:#2B308C;--ink:#2A1F1F;--mut:#6B5E57;--line:#F0E3C6;--grey:#857A72;--warn:#B54708;--ok:#15803D;--field:#E2D2AC}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#F5F9FD;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#FFF8E6;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
 #app{max-width:520px;margin:0 auto;min-height:100%;background:#fff;display:flex;flex-direction:column;position:relative}
 button,input,select{font:inherit;color:inherit}
-.hdr{background:var(--b);color:#fff;padding:14px 12px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:5;padding-top:calc(14px + env(safe-area-inset-top))}
+.hdr{background:var(--b);color:#fff;border-bottom:3px solid var(--gold);padding:14px 12px 12px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:5;padding-top:calc(14px + env(safe-area-inset-top))}
 .hdr h1{margin:0;font-size:19px;font-weight:700}
-.hdr .sub{margin:2px 0 0;font-size:13px;color:#DCEAF7}
+.hdr .sub{margin:2px 0 0;font-size:13px;color:#FFE7A3}
 .icon-btn{background:none;border:0;color:inherit;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:22px;cursor:pointer;flex:none}
 .icon-btn:active{background:rgba(255,255,255,.15)}
 .body{flex:1;display:flex;flex-direction:column;padding-bottom:76px}
@@ -47,14 +47,14 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 .qbtn{width:52px;height:52px;flex:none;border-radius:12px;border:1px solid var(--field);background:#fff;font-size:24px;font-weight:700;color:var(--b);cursor:pointer}
 .info{background:var(--light);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;font-size:15px}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.card{background:var(--light);border-radius:12px;padding:12px}
+.card{background:var(--light);border-radius:12px;padding:12px;border-left:4px solid var(--gold)}
 .card p{margin:0}.card .k{font-size:12px;color:var(--mut)}.card .v{font-size:20px;font-weight:800;margin-top:2px}
 .sec{margin:6px 0 0;font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.5px}
 .li{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);gap:10px}
 .li p{margin:0}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;background:#fff;border-top:1px solid var(--line);display:grid;padding-bottom:env(safe-area-inset-bottom);z-index:6}
 .nav button{background:none;border:0;padding:8px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--mut);font-size:12px;font-weight:500;min-height:60px;cursor:pointer}
-.nav button.on{color:var(--b);font-weight:700}
+.nav button.on{color:var(--b);font-weight:700;box-shadow:inset 0 3px 0 var(--gold)}
 .credit{margin:auto 0 0;padding:14px 16px 8px;font-size:11px;color:var(--grey);text-align:center}
 .wa{width:44px;height:44px;border-radius:22px;background:#E7F6EC;color:var(--ok);display:flex;align-items:center;justify-content:center;flex:none;text-decoration:none}
 .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#1F2A37;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;max-width:90%;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.2)}
@@ -62,9 +62,10 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 .menu .panel{background:#fff;width:78%;max-width:320px;height:100%;padding:calc(24px + env(safe-area-inset-top)) 0 24px;display:flex;flex-direction:column}
 .menu .who{padding:0 20px 16px;border-bottom:1px solid var(--line)}
 .menu .item{background:none;border:0;text-align:left;padding:16px 20px;font-size:16px;font-weight:600;cursor:pointer;min-height:52px}
-.login{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:32px 24px;background:linear-gradient(#EAF4FD,#fff 60%)}
-.logo{width:96px;height:96px;border-radius:24px;background:var(--b);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;margin:0 auto;box-shadow:0 10px 30px rgba(47,116,181,.25)}
-.logo b{font-size:15px;letter-spacing:1px}
+.login{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:32px 24px;background:radial-gradient(circle at 50% 0,#FFE38A 0,#FFF4D2 38%,#fff 75%)}
+.logo{width:132px;height:132px;display:block;margin:0 auto;border-radius:50%;box-shadow:0 10px 28px rgba(215,25,31,.28)}
+.credit .jm,.jm{width:14px;height:14px;vertical-align:-2px;margin-right:5px;border-radius:3px}
+.hlogo{width:34px;height:34px;border-radius:50%;background:#fff;flex:none;box-shadow:0 0 0 2px var(--gold)}
 .center{text-align:center}
 .err{color:#B42318;font-size:14px;margin:0}
 .empty{padding:32px 16px;text-align:center;color:var(--mut)}
@@ -81,8 +82,9 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 /* ============ CONFIG ============ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbxEaQ9qdFevDyHL_aDLAuf1i3hjZwl3H-Lhs_83xjqS2_yjuanUGi1CIwzSX3wN3g1B/exec';            // Apps Script web app URL (…/exec). Khali = demo mode
 const UPI_ID = '[UPI ID]';      // SKDMB ka UPI ID
-const BRAND = { short: 'SKDMB Doodh', full: 'Shree Krishna Doodh Mishthan Bhandaar' };
+const BRAND = { short: 'SKDMB Doodh', full: 'Shree Krishna Dudh Misthan Bhandar', addr: '8-A, Bal Nagar, Mahesh Nagar, Jaipur' };
 const CREDIT = 'Powered by Jinovate — Smart solutions for your business';
+const JMARK = '<img class="jm" src="jmark-32.png" alt="Jinovate">';
 const DEMO = false;
 
 /* ============ helpers ============ */
@@ -162,7 +164,7 @@ const isAdmin = () => S && S.user.role === 'Admin';
 function header(title, sub, back) {
   return `<header class="hdr">
     <button class="icon-btn" aria-label="${back ? 'Peeche' : 'Menu'}" onclick="${back ? back : 'openMenu()'}">${svg(back ? 'back' : 'menu')}</button>
-    <div style="flex:1;min-width:0"><h1>${esc(title)}</h1>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div>
+    ${back ? '' : '<img class="hlogo" src="logo-256.png" alt="">'}<div style="flex:1;min-width:0"><h1>${esc(title)}</h1>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div>
     <button class="icon-btn" aria-label="Refresh" onclick="refresh()">${svg('refresh', 22)}</button>
   </header>${!navigator.onLine ? '<div class="offline">Network nahi hai. Entry phone mein save hogi aur network aate hi chali jayegi.</div>' : ''}${outbox().length ? `<div class="offline">${outbox().length} entry bhejna baaki hai</div>` : ''}${DEMO ? '<div class="demo">Demo mode: sample data, sheet mein kuch save nahi hota</div>' : ''}`;
 }
@@ -187,8 +189,8 @@ function refresh() { V.cache = {}; flushOutbox(); render(); }
 /* ============ screens ============ */
 function loginHtml(err) {
   return `<div class="login">
-    <div class="center"><div class="logo"><svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M9 2h6v3l2 3v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8l2-3z"/><path d="M7 12h10"/></svg><b>SKDMB</b></div>
-      <h1 style="margin:16px 0 4px;font-size:26px">${BRAND.short}</h1><p class="rs" style="margin:0">${BRAND.full}</p></div>
+    <div class="center"><img class="logo" src="logo-256.png" alt="SKDMB logo">
+      <h1 style="margin:16px 0 4px;font-size:26px">${BRAND.short}</h1><p class="rs" style="margin:0">${BRAND.full}</p><p class="rs" style="margin:2px 0 0;font-size:12px">${BRAND.addr}</p></div>
     <form onsubmit="doLogin(event)" style="display:flex;flex-direction:column;gap:14px">
       <div><label class="lb" for="mob">Mobile number</label><input class="in" id="mob" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10 digit mobile" required></div>
       <div><label class="lb" for="pin">PIN</label><input class="in" id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="6 digit PIN" required></div>
@@ -393,7 +395,7 @@ async function aajView() {
     ${r.items && r.items.length ? `<div><p class="sec">SAMAN BIKA (${R(r.totals.saman)})</p>` + r.items.map(i => `<div class="li"><p>${esc(i.item)}</p><p class="rs" style="margin:0">${Math.round(i.qty * 100) / 100} ${esc(i.unit)} · ${R(i.amount)}</p></div>`).join('') + '</div>' : ''}
     <div><p class="sec">BADLAAV</p>${ch || '<p class="rs">Is din koi badlaav nahi</p>'}</div>
     ${r.totals.payments ? `<div class="info"><span>Is din payment mila</span><b>${R(r.totals.payments)}</b></div>` : ''}
-  </div><p class="credit">${CREDIT}</p></div>`;
+  </div><p class="credit">${JMARK}${CREDIT}</p></div>`;
 }
 function waLink(b) {
   const text = [`Namaste ${b.name},`, `${BRAND.short} — ${b.month} ka bill`, `Kul doodh: ${L(b.litres)} — ${R(b.milkAmt)}`, ...(b.other ? [`Other saman: ${R(b.other)}`] : []), `Bill: ${R(b.bill)}`, `Jama: ${R(b.paid)}`, `Baaki: ${R(b.balance)}`, `UPI: ${UPI_ID}`, '', '— Powered by Jinovate'].join('\n');
@@ -453,14 +455,14 @@ async function billView() {
   const items = d.items.length ? `<p class="sec">OTHER SAMAN</p>` + d.items.map(i => row(`${esc(i.item)}: ${Math.round(i.qty * 100) / 100} ${esc(i.unit)} × ${R(i.rate)}`, R(i.amount))).join('') + row('Kul saman', R(d.other), true) : '';
   V.billMsg = d;
   return header('Bill', d.month, "V.billId=null;render()") + `<div class="body"><div class="pad" id="billbox">
-    <div style="display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--b);padding-bottom:12px"><div class="logo" style="width:52px;height:52px;border-radius:12px;margin:0"><b style="font-size:11px">SKDMB</b></div>
-      <div><p style="margin:0;font-weight:800">${BRAND.full}</p><p class="rs">Monthly doodh bill — ${esc(d.month)}</p></div></div>
+    <div style="display:flex;gap:12px;align-items:center;border-bottom:3px solid var(--b);padding-bottom:12px"><img class="logo" src="logo-256.png" alt="" style="width:58px;height:58px;margin:0;box-shadow:none">
+      <div><p style="margin:0;font-weight:800">${BRAND.full}</p><p class="rs">${BRAND.addr}</p><p class="rs">Monthly doodh bill — ${esc(d.month)}</p></div></div>
     <div style="display:flex;justify-content:space-between"><div><p class="rs" style="margin:0">Bill to</p><p style="margin:0;font-weight:700">${esc(d.name)}</p><p style="margin:0">${esc(d.address)}</p></div><div style="text-align:right"><p class="rs" style="margin:0">Customer ID</p><p style="margin:0;font-weight:700">${esc(d.id)}</p></div></div>
     <div><p class="sec">DOODH</p>${milk}</div>${items ? '<div>' + items + '</div>' : ''}
     <div class="info" style="flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between"><span>Bill amount</span><b>${R(d.bill)}</b></div><div style="display:flex;justify-content:space-between"><span>Jama</span><b>${R(d.paid)}</b></div><div style="display:flex;justify-content:space-between;font-size:18px"><b>Baaki</b><b>${R(d.balance)}</b></div></div>
     ${d.payments.length ? `<p class="rs" style="margin:0">Jama: ${d.payments.map(p => showDate(p.date) + ' ' + R(p.amount) + ' (' + esc(p.mode) + ')').join(', ')}</p>` : ''}
     <p style="margin:0;font-size:14px">Payment: UPI ${esc(UPI_ID)} ya delivery boy ko cash.</p>
-    <p class="credit" style="margin-top:8px">Billing system by Jinovate · jinovate.com</p>
+    <p class="credit" style="margin-top:8px">${JMARK}Billing system by Jinovate · jinovate.com</p>
   </div>
   <div class="pad" style="padding-top:0"><button class="btn" id="pdfbtn" onclick="sharePdf()">PDF share / download karo</button>
     <a class="btn out" style="text-align:center;text-decoration:none;display:block" href="${waLink(d)}" target="_blank" rel="noopener">WhatsApp message bhejo</a></div></div>`;
@@ -477,9 +479,9 @@ function makeBillPdf(d) {
   };
   const rect = (x, y, w, h, color) => ops.push(`${rgb(color)} rg ${x} ${H - y - h} ${w} ${h} re f`);
   const line = (y, color = '#E3EAF2', wd = 0.8) => ops.push(`${rgb(color)} RG ${wd} w 30 ${H - y} m ${W - 30} ${H - y} l S`);
-  rect(30, 28, 42, 42, '#2F74B5'); text(51, 53, 'SKDMB', 8, true, '#FFFFFF', 'center');
+  rect(30, 28, 42, 42, '#D7191F'); text(51, 53, 'SKDMB', 8, true, '#FFFFFF', 'center');
   text(80, 44, BRAND.full, 12, true); text(80, 60, 'Monthly doodh bill - ' + d.month, 9, false, '#5B6673');
-  line(80, '#2F74B5', 2);
+  line(80, '#D7191F', 2);
   text(30, 100, 'Bill to', 8, false, '#5B6673'); text(30, 113, d.name, 11, true); text(30, 126, d.address, 9);
   text(W - 30, 100, 'Customer ID', 8, false, '#5B6673', 'right'); text(W - 30, 113, d.id, 11, true, '#1F2A37', 'right');
   let y = 152;
@@ -489,7 +491,7 @@ function makeBillPdf(d) {
   if (d.change) row('Badlaav (extra / kam / ghar band)', (d.change > 0 ? '+' : '') + d.change + ' L');
   row(`Kul doodh ${d.litres} L x ${R(d.rate)}`, R(d.milkAmt), true);
   if (d.items.length) { y += 8; text(30, y, 'OTHER SAMAN', 8.5, true, '#5B6673'); y += 16; d.items.forEach(i => row(`${i.item}: ${Math.round(i.qty * 100) / 100} ${i.unit} x ${R(i.rate)}`, R(i.amount))); row('Kul saman', R(d.other), true); }
-  y += 8; rect(30, y, W - 60, 62, '#EAF4FD');
+  y += 8; rect(30, y, W - 60, 62, '#FFF4D2');
   text(42, y + 18, 'Bill amount', 10); text(W - 42, y + 18, R(d.bill), 10, true, '#1F2A37', 'right');
   text(42, y + 34, 'Jama', 10); text(W - 42, y + 34, R(d.paid), 10, true, '#1F2A37', 'right');
   text(42, y + 52, 'Baaki', 12, true); text(W - 42, y + 52, R(d.balance), 12, true, '#1F2A37', 'right'); y += 82;
@@ -546,11 +548,11 @@ async function saveAll() {
 }
 function aboutView() {
   return header('About', '', "V.about=false;render()") + `<div class="body"><div class="pad" style="gap:22px;padding-top:24px">
-    <div style="display:flex;gap:14px;align-items:center"><div class="logo" style="width:64px;height:64px;border-radius:16px;margin:0"><b style="font-size:12px">SKDMB</b></div>
+    <div style="display:flex;gap:14px;align-items:center"><img class="logo" src="logo-256.png" alt="" style="width:72px;height:72px;margin:0">
     <div><h1 style="margin:0;font-size:22px">${BRAND.short}</h1><p class="rs">Version 1.0</p></div></div>
     <div><p style="margin:0;font-weight:600">${BRAND.full}</p><p class="rs">Daily doodh delivery, payment entry aur monthly billing.</p></div>
     <div style="border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:6px">
-      <p style="margin:0;font-weight:600">${CREDIT}</p>
+      <p style="margin:0;font-weight:600">${JMARK}${CREDIT}</p>
       <p style="margin:0">Website: <a href="https://jinovate.com" target="_blank" rel="noopener">jinovate.com</a></p>
       <p style="margin:0">WhatsApp: <a href="https://wa.me/919351326317" target="_blank" rel="noopener">9351326317</a></p>
     </div></div></div>`;
