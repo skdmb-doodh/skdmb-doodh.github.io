@@ -213,7 +213,7 @@ async function doLogin(e) {
   const b = $('#lbtn'); b.disabled = true; b.textContent = 'Ruko…';
   try {
     const r = await api('login', { mobile: $('#mob').value, pin: $('#pin').value });
-    S = { token: r.token, user: r.user }; saveSession();
+    S = { token: r.token, user: r.user, day: todayStr() }; saveSession();
     V.tab = isOwner() ? 'aaj' : 'route'; render(); flushOutbox();
   } catch (er) { $('#app').innerHTML = loginHtml(er.message); }
 }
@@ -701,6 +701,7 @@ setInterval(() => {
   if (!S || !isOwner() || V.tab !== 'aaj' || V.menu || V.about || V.stock || document.hidden) return;
   delete V.cache['sum_' + V.date]; render();
 }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S && !DEMO && S.day !== todayStr()) return render(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S && isOwner() && V.tab === 'aaj') { delete V.cache['sum_' + V.date]; render(); } });
 
 
@@ -813,6 +814,7 @@ const OWNER_NAV = [['aaj', 'Aaj', 'sum'], ['bills', 'Bills', 'bill'], ['route', 
 let renderSeq = 0;
 async function render() {
   const app = $('#app');
+  if (S && !DEMO && S.day !== todayStr()) { logout(true); toast('Naya din: dobara login karo'); return; } // roz raat 12 baje logout
   if (PUBLIC_KEY) { app.innerHTML = '<div class="spin"></div>'; app.innerHTML = await publicHtml(); return; }
   if (!S) { app.innerHTML = loginHtml(); return; }
   if (!V.tab) V.tab = isOwner() ? 'aaj' : 'route';
