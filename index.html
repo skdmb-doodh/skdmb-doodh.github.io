@@ -81,6 +81,18 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 @keyframes sp{to{transform:rotate(360deg)}}
 .offline{background:#FEF3E8;color:var(--warn);font-size:13px;font-weight:600;padding:8px 16px;text-align:center}
 .demo{background:#FFF7D6;color:#7A5A00;font-size:12px;font-weight:600;padding:6px 16px;text-align:center}
+.hrow{gap:12px}.hno{min-width:46px;height:46px;border-radius:12px;background:var(--light);border:1px solid #F2C94C;color:#7A4B00;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;flex:none;padding:0 4px}
+.sumbar{display:flex;gap:8px;padding:10px 16px;background:var(--light)}.sumbar>div{flex:1;background:#fff;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column}.sumbar b{font-size:20px}.sumbar span{font-size:12px;color:var(--mut)}.sumbar .hot{background:#FFF1C2}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{border:0;border-radius:18px;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.08)}.tile .ti{font-size:40px;line-height:1}.tile:active{transform:scale(.97)}
+.t-milk{background:#FFF4D2;color:#7A4B00}.t-bag{background:#EAF2FF;color:#1849A9}.t-pay{background:#E7F6EC;color:#05603A}.t-off{background:#FEE4E2;color:#B42318}
+.qbox{display:flex;flex-direction:column;gap:8px}.qlab{margin:0;font-size:17px;font-weight:800}.lchips .chip{flex:1;min-width:0;padding:10px 0;font-size:17px;font-weight:800}
+.btn.big{min-height:60px;font-size:19px}.btn.pay{background:#05603A}.btn.pay[disabled]{background:#9AA4B2;opacity:1}
+.balcard{position:relative;background:#FFF1C2;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column}.balcard span{font-size:14px;font-weight:700;color:#7A4B00}.balcard b{font-size:34px;font-weight:900}.balcard small{font-size:13px;color:var(--mut)}.balcard .spk{position:absolute;right:12px;top:12px}.balcard.ok{background:#E7F6EC}.balcard.ok span{color:#05603A}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ibtn{border:1px solid var(--field);background:#fff;border-radius:14px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:64px;cursor:pointer;font-size:16px}.ibtn span{font-size:13px;color:var(--mut)}.ibtn.on{border:2px solid #1849A9;background:#EAF2FF}
+.ck{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;min-height:48px}.ck input{width:26px;height:26px}
+.langbtn{background:#fff;color:var(--b);border:0;border-radius:18px;min-width:40px;height:36px;font-weight:800;font-size:16px;cursor:pointer;flex:none}
+.doneov{position:fixed;inset:0;background:rgba(5,96,58,.92);z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;animation:fi .15s ease-out}.donecard{text-align:center;color:#fff;display:flex;flex-direction:column;gap:16px;align-items:center;max-width:360px;width:100%}.tick{width:120px;height:120px;border-radius:60px;background:#fff;color:#05603A;font-size:76px;font-weight:900;display:flex;align-items:center;justify-content:center;animation:pop .3s ease-out}.dmsg{margin:0;font-size:22px;font-weight:800}.doneov .btn.out{background:#fff;color:#B42318;border:0}
+@keyframes pop{0%{transform:scale(.4)}80%{transform:scale(1.1)}100%{transform:scale(1)}}@keyframes fi{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
@@ -173,12 +185,12 @@ function header(title, sub, back) {
   return `<header class="hdr">
     <button class="icon-btn" aria-label="${back ? 'Peeche' : 'Menu'}" onclick="${back ? back : 'openMenu()'}">${svg(back ? 'back' : 'menu')}</button>
     ${back ? '' : '<img class="hlogo" src="logo-256.png" alt="">'}<div style="flex:1;min-width:0"><h1>${esc(title)}</h1>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div>
-    <button class="icon-btn" aria-label="Refresh" onclick="refresh()">${svg('refresh', 22)}</button>
-  </header>${!navigator.onLine ? '<div class="offline">Network nahi hai. Entry phone mein save hogi aur network aate hi chali jayegi.</div>' : ''}${outbox().length ? `<div class="offline">${outbox().length} entry bhejna baaki hai</div>` : ''}${DEMO ? '<div class="demo">Demo mode: sample data, sheet mein kuch save nahi hota</div>' : ''}`;
+    ${S && !isOwner() ? `<button class="langbtn" aria-label="Bhasha badlo" onclick="toggleLang()">${HI() ? 'Aa' : 'अ'}</button>` : ''}<button class="icon-btn" aria-label="Refresh" onclick="refresh()">${svg('refresh', 22)}</button>
+  </header>${!navigator.onLine ? `<div class="offline">📵 ${tx('Net nahi hai. Entry phone mein save hogi, net aate hi chali jayegi.', 'नेट नहीं है। एंट्री फ़ोन में सेव होगी, नेट आते ही चली जाएगी।')}</div>` : ''}${outbox().length ? `<div class="offline">⏳ ${outbox().length} ${tx('entry bhejna baaki hai', 'एंट्री भेजनी बाकी है')}</div>` : ''}${DEMO ? '<div class="demo">Demo mode: sample data, sheet mein kuch save nahi hota</div>' : ''}`;
 }
 function nav(items) {
   return `<nav class="nav" style="grid-template-columns:repeat(${items.length},minmax(0,1fr))">` + items.map(([key, label, icon]) =>
-    `<button class="${V.tab === key ? 'on' : ''}" onclick="go('${key}')">${svg(icon)}<span>${label}</span></button>`).join('') + '</nav>';
+    `<button class="${V.tab === key || (key === 'route' && ['ghar', 'change', 'saman', 'payment', 'chhutti'].includes(V.tab)) ? 'on' : ''}" onclick="buzz();go('${key}')">${svg(icon)}<span>${HI() ? ({ route: 'मेरा रूट', din: 'मेरा दिन' }[key] || label) : label}</span></button>`).join('') + '</nav>';
 }
 function openMenu() { V.menu = true; render(); }
 function closeMenu() { V.menu = false; render(); }
@@ -191,7 +203,7 @@ function menuHtml() {
     <button class="item" onclick="logout()">Logout</button>
   </div></div>`;
 }
-function go(tab) { V.tab = tab; V.about = false; V.billId = null; V.stock = null; if (!['change', 'payment', 'saman'].includes(tab)) V.cust = null; render(); }
+function go(tab) { V.tab = tab; V.about = false; V.billId = null; V.stock = null; if (!['change', 'payment', 'saman', 'ghar', 'chhutti'].includes(tab)) V.cust = null; render(); }
 function refresh() { V.cache = {}; flushOutbox(); render(); }
 
 /* ============ screens ============ */
@@ -229,7 +241,7 @@ function pcPut(key, d) {
   try { store.set(PCK, JSON.stringify(c)); } catch (e) { ks.slice(10).forEach(k => delete c[k]); try { store.set(PCK, JSON.stringify(c)); } catch (e2) {} }
 }
 const PEND = {};
-const staleBar = () => { const b = $('#stalebar'); if (b) b.style.display = Object.keys(PEND).length ? 'block' : 'none'; };
+const staleBar = () => { const b = $('#stalebar'); if (b) { b.style.display = Object.keys(PEND).length ? 'block' : 'none'; b.textContent = '⟳ ' + tx('Naya data aa raha hai…', 'नया डेटा आ रहा है…'); } };
 const typing = () => { const a = document.activeElement; return !!a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && a.type !== 'date'; };
 async function load(key, fn) {
   if (V.cache[key]) return V.cache[key];
@@ -252,7 +264,7 @@ async function load(key, fn) {
 const COW = '🐄', BH = '🐃';
 V.shift = V.shift || (new Date().getHours() < 14 ? 'Subh' : 'Sham');
 function shiftChips() {
-  return `<div class="chips shiftbar">${[['Subh', '☀️ Subh'], ['Sham', '🌙 Sham']].map(([s, t]) => `<button type="button" class="chip big ${V.shift === s ? 'on' : ''}" onclick="V.shift='${s}';V.routeData=null;V.cache={};render()">${t}</button>`).join('')}</div>`;
+  return `<div class="chips shiftbar">${[['Subh', shiftName('Subh')], ['Sham', shiftName('Sham')]].map(([s, t]) => `<button type="button" class="chip big ${V.shift === s ? 'on' : ''}" onclick="V.shift='${s}';V.routeData=null;V.cache={};render()">${t}</button>`).join('')}</div>`;
 }
 function pills(cow, bh) {
   const p = [];
@@ -288,6 +300,40 @@ async function withLoc(data) { const l = await getLoc(); return Object.assign({}
 const mapLink = (lat, lng) => `https://www.google.com/maps?q=${lat},${lng}`;
 const farTxt = m => m == null ? '' : m > 150 ? `<span class="badge" style="color:#B42318;background:#FEE4E2">⚠️ ghar se ${m} m door</span>` : `<span class="badge" style="color:var(--ok);background:#E7F6EC">📍 ghar pe</span>`;
 
+/* ===================================================================
+   BOY SCREENS v5 — design rules (kam padhe-likhe, WhatsApp chalane wale):
+   1. Ek soch: "ghar kholo → kaam chuno". Har kaam ghar ke page se.
+   2. Pehchaan, yaad nahi: Hindi naam bada, makaan number bada, har kaam ka apna rang + icon.
+   3. Kam likhna: litre aur paise ke chips, +/- button, "Pura baaki" ek tap mein.
+   4. Har save ke baad bada ✓, awaaz aur vibration. Galti ho to "Wapas lo".
+   5. Button par wahi likha jo hoga: "₹500 Cash save karo".
+   6. Bhasha boy khud chune: हिंदी / Hinglish.
+   =================================================================== */
+const LANGK = 'skdmb_lang';
+const HI = () => store.get(LANGK) === 'hi' && !(S && isOwner());
+const tx = (a, h) => HI() ? h : a;
+function toggleLang() { store.set(LANGK, store.get(LANGK) === 'hi' ? 'en' : 'hi'); buzz(); render(); }
+const buzz = (p = 25) => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+const shiftName = s => s === 'Subh' ? tx('☀️ Subh', '☀️ सुबह') : tx('🌙 Sham', '🌙 शाम');
+const hno = a => { const m = String(a || '').match(/(?:h\.?\s*no\.?|house|makan|मकान|#)\s*[:.-]?\s*([0-9]+[a-z]?(?:[-\/][0-9a-z]+)?)/i) || String(a || '').match(/\b([0-9]+[a-z]?(?:[-\/][0-9a-z]+)?)\s*$/i); return m ? m[1] : ''; };
+
+/* ----- bada ✓ (save hone par) ----- */
+let DONE_T = null;
+function done(msg, sayText, undo) {
+  buzz([40, 60, 40]); if (sayText) speak(sayText);
+  const old = $('#doneov'); if (old) old.remove(); clearTimeout(DONE_T);
+  const d = document.createElement('div'); d.id = 'doneov'; d.className = 'doneov'; d.setAttribute('role', 'status');
+  d.innerHTML = `<div class="donecard"><div class="tick">✓</div><p class="dmsg">${esc(msg)}</p>${undo ? `<button class="btn out" id="undobtn">↩️ ${tx('Galti hui? Wapas lo', 'गलती हुई? वापस लो')}</button>` : ''}</div>`;
+  d.onclick = e => { if (e.target.id !== 'undobtn') d.remove(); };
+  document.body.appendChild(d);
+  if (undo) $('#undobtn').onclick = async () => { d.remove(); try { await undo(); toast(tx('Wapas le liya', 'वापस ले लिया')); } catch (e) { toast(e.message); } V.cache = {}; V.routeData = null; render(); };
+  DONE_T = setTimeout(() => d.remove(), undo ? 6000 : 1800);
+}
+function oops(msg) { buzz([120, 80, 120]); toast(msg); }
+
+const LCHIPS = [0, 0.5, 1, 1.5, 2, 3];
+const lch = n => n === 0.5 ? '½' : n === 1.5 ? '1½' : String(n);
+
 /* ----- boy: route ----- */
 async function routeView() {
   const boyId = isOwner() ? V.boyId : null;
@@ -295,156 +341,240 @@ async function routeView() {
   const r = await load('route_' + (boyId || '') + V.date + V.shift, () => api('route', { date: V.date, boyId, shift: V.shift }));
   V.routeData = r;
   const tot = r.customers.reduce((s, c) => s + c.cow + c.bh, 0);
-  const rows = r.customers.map(c => {
+  const totCow = r.customers.reduce((s, c) => s + c.cow, 0), totBh = r.customers.reduce((s, c) => s + c.bh, 0);
+  const nChg = r.customers.filter(c => c.changed || c.cow + c.bh === 0).length;
+  const rows = r.customers.map((c, i) => {
     const band = (c.cow + c.bh === 0);
     const st = band ? 'st-band' : c.changed ? 'st-chg' : '';
-    const note = c.chhutti ? 'Chhutti' : band ? 'Band' : c.changed ? (c.remark || 'Badlaav') : '';
-    const nm = c.hindi || c.name;
-    return `<div class="row ${st}" role="button" tabindex="0" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="openChange('${esc(c.id)}')">
-      <div style="flex:1;min-width:0"><p class="rn big">${esc(nm)}</p><p class="rs">${c.hindi ? esc(c.name) + ' · ' : ''}${esc(c.address)}</p>
-        ${note ? `<span class="badge">${esc(note)}</span>` : ''}${c.salesTotal ? `<span class="badge" style="color:var(--b);background:var(--light);margin-left:4px">Saman ${R(c.salesTotal)}</span>` : ''}${c.paidToday ? `<span class="badge" style="color:var(--ok);background:#E7F6EC;margin-left:4px">₹ ${R(c.paidToday)} mila</span>` : ''}</div>
+    const note = c.chhutti ? tx('🏖️ Chhutti', '🏖️ छुट्टी') : band ? tx('🔒 Band', '🔒 बंद') : c.changed ? '✏️ ' + (c.remark || tx('Badlaav', 'बदलाव')) : '';
+    const nm = c.hindi || c.name, h = hno(c.address);
+    return `<div class="row hrow ${st}" role="button" tabindex="0" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="openHouse('${esc(c.id)}')">
+      <div class="hno" aria-hidden="true">${h ? esc(h) : i + 1}</div>
+      <div style="flex:1;min-width:0"><p class="rn big">${esc(nm)}</p><p class="rs">${c.hindi && !HI() ? esc(c.name) + ' · ' : ''}${esc(c.address)}</p>
+        ${note ? `<span class="badge">${esc(note)}</span>` : ''}${c.salesTotal ? `<span class="badge" style="color:#1849A9;background:#EAF2FF;margin-left:4px">🛍️ ${R(c.salesTotal)}</span>` : ''}${c.paidToday ? `<span class="badge" style="color:var(--ok);background:#E7F6EC;margin-left:4px">💵 ${R(c.paidToday)}</span>` : ''}</div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${pills(c.cow, c.bh)}
-        <button class="spk" aria-label="${esc(nm)} sunao" onclick="event.stopPropagation();speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></div></div>`;
+        <button class="spk" aria-label="${esc(nm)} ${tx('sunao', 'सुनाओ')}" onclick="event.stopPropagation();speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></div></div>`;
   }).join('');
-  return header(isOwner() ? r.boy.name + ' ka route' : 'Mera Route', `${r.boy.name} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
-    + `<div class="body">${shiftChips()}<div class="strip"><span>${r.customers.length} ghar</span><span>${V.shift === 'Subh' ? '☀️' : '🌙'} ${L(tot)}</span></div>
-    <div class="search"><input class="in" type="search" placeholder="Ghar khojo…" oninput="filterRows(this.value)" aria-label="Ghar khojo"></div>
-    <div id="rows">${rows || '<p class="empty">Is time koi ghar nahi</p>'}</div>
-    <div class="legend"><span><i style="background:#fff;border:1px solid var(--line)"></i>Normal</span><span><i style="background:#FFF1C2"></i>Badlaav</span><span><i style="background:#FEE4E2"></i>Band / chhutti</span></div></div>`;
+  return header(isOwner() ? r.boy.name + ' ka route' : tx('Mera Route', 'मेरा रूट'), `${r.boy.name} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
+    + `<div class="body">${shiftChips()}
+    <div class="sumbar"><div><b>${r.customers.length}</b><span>${tx('ghar', 'घर')}</span></div><div><b>${L(tot)}</b><span>${totCow ? COW + ' ' + L(totCow) : ''} ${totBh ? BH + ' ' + L(totBh) : ''}</span></div><div class="${nChg ? 'hot' : ''}"><b>${nChg}</b><span>${tx('badlaav', 'बदलाव')}</span></div>
+      <button class="spk" style="align-self:center" aria-label="${tx('Aaj ka doodh sunao', 'आज का दूध सुनाओ')}" onclick="speak('${tx('Aaj', 'आज')} ${r.customers.length} ${tx('ghar', 'घर')}, ${sayQty(totCow, totBh)}${nChg ? ', ' + nChg + ' ' + tx('badlaav', 'बदलाव') : ''}')">🔊</button></div>
+    <div class="search"><input class="in" type="search" placeholder="🔎 ${tx('Naam ya makaan number', 'नाम या मकान नंबर')}" oninput="filterRows(this.value)" aria-label="${tx('Ghar khojo', 'घर खोजो')}"></div>
+    <div id="rows">${rows || `<p class="empty">${tx('Is time koi ghar nahi', 'इस समय कोई घर नहीं')}</p>`}</div>
+    <div class="legend"><span><i style="background:#fff;border:1px solid var(--line)"></i>${tx('Roz jaisa', 'रोज़ जैसा')}</span><span><i style="background:#FFF1C2"></i>${tx('Badlaav', 'बदलाव')}</span><span><i style="background:#FEE4E2"></i>${tx('Band / chhutti', 'बंद / छुट्टी')}</span></div></div>`;
 }
 function filterRows(q) { q = q.toLowerCase(); document.querySelectorAll('#rows .row').forEach(r => r.style.display = r.dataset.name.includes(q) ? '' : 'none'); }
+function openHouse(id) { buzz(); V.cust = id; V.tab = 'ghar'; render(); }
 function openChange(id) { V.cust = id || null; V.tab = 'change'; render(); }
 async function ensureRoute() {
   const boyId = isOwner() ? V.boyId : null;
   return V.routeData || load('route_' + (boyId || '') + V.date + V.shift, () => api('route', { date: V.date, boyId, shift: V.shift }));
 }
+/* ghar chuno: bade card, dropdown nahi */
+function housePicker(r, next, title) {
+  const rows = r.customers.map((c, i) => `<button class="row hrow" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="V.cust='${esc(c.id)}';V.tab='${next}';buzz();render()">
+      <div class="hno" aria-hidden="true">${esc(hno(c.address) || i + 1)}</div><div style="flex:1;min-width:0"><p class="rn big">${esc(c.hindi || c.name)}</p><p class="rs">${esc(c.address)}</p></div><p class="rq">›</p></button>`).join('');
+  return header(title, tx('Ghar chuno', 'घर चुनो'), "go('route')") + `<div class="body">${shiftChips()}
+    <div class="search"><input class="in" type="search" placeholder="🔎 ${tx('Naam ya makaan number', 'नाम या मकान नंबर')}" oninput="filterRows(this.value)"></div><div id="rows">${rows}</div></div>`;
+}
+const houseOf = (r) => r.customers.find(x => x.id === V.cust) || null;
 
-/* ----- boy: badlaav (ek ghar) ----- */
-async function changeView() {
-  if (isOwner() && !V.boyId) return ownerPickBoy('change');
-  const r = await ensureRoute();
-  const c = r.customers.find(x => x.id === V.cust) || null;
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
-  if (!c) return header('Badlaav', showDate(V.date), "go('route')") + `<div class="body">${shiftChips()}<div class="pad">
-    <div><label class="lb" for="cust">Ghar chuno</label><select class="in" id="cust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div></div></div>`;
+/* ----- ghar ka page: 4 bade kaam ----- */
+async function houseView() {
+  if (isOwner() && !V.boyId) return ownerPickBoy('route');
+  const r = await ensureRoute(); const c = houseOf(r);
+  if (!c) { V.tab = 'route'; return routeView(); }
   const nm = c.hindi || c.name;
-  const step = (id, lab, val) => `<div><label class="lb" for="${id}">${lab}</label><div class="qty">
-      <button type="button" class="qbtn" aria-label="${lab} kam" onclick="stepQ('${id}',-0.5)">−</button>
-      <input class="in" id="${id}" type="number" inputmode="decimal" step="0.5" min="0" value="${id === 'qcow' ? c.cow : c.bh}">
-      <button type="button" class="qbtn" aria-label="${lab} zyada" onclick="stepQ('${id}',0.5)">+</button></div></div>`;
-  return header(nm, (V.shift === 'Subh' ? '☀️ Subh' : '🌙 Sham') + ' · ' + showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
-    <div class="info" style="align-items:center"><span>Roz ka</span><span>${pills(c.defCow, c.defBh)} <button class="spk" aria-label="Sunao" onclick="speak('${esc(nm).replace(/'/g, '')}, roz ${sayQty(c.defCow, c.defBh)}')">🔊</button></span></div>
-    <div class="chips"><button type="button" class="chip big" onclick="setQ(${c.defCow},${c.defBh},'')">✅ Roz jaisa</button><button type="button" class="chip big" onclick="setQ(0,0,'Ghar band')">🔒 Ghar band</button></div>
-    ${step('qcow', COW + ' Gaay (litre)')}${step('qbh', BH + ' Bhains (litre)')}
-    <div><label class="lb" for="rem">Note (zaroori nahi)</label><input class="in" id="rem" maxlength="100" value="${esc(c.remark)}" placeholder="Jaise: mehmaan aaye"></div>
-    <button class="btn" id="sbtn" onclick="saveChange('${esc(c.id)}')">Save karo</button>
-    <p class="sec">GHAR KUCH DIN BAND HAI?</p>
-    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="cf">Kab se</label><input class="in" id="cf" type="date" value="${V.date}"></div><div style="flex:1"><label class="lb" for="ct">Kab tak</label><input class="in" id="ct" type="date" value="${V.date}"></div></div>
-    <button class="btn out" onclick="saveChhutti('${esc(c.id)}')">Chhutti save karo</button>
-    ${!c.hasLoc ? `<p class="sec">GHAR KI LOCATION</p><p class="rs" style="margin:0">Ghar ke darwaze pe khade hoke ek baar dabao.</p><button class="btn out" id="hlbtn" onclick="saveHouseLoc('${esc(c.id)}')">📍 Ghar ki location save karo</button>` : ''}
+  let bal = '';
+  try { const b = await load('cust_' + c.id, () => api('customer', { custId: c.id })); bal = `<div class="info"><span>💰 ${tx('Kul baaki', 'कुल बाकी')}</span><b style="color:${b.balance > 0 ? 'var(--warn)' : 'var(--ok)'};font-size:20px">${R(b.balance)}</b></div>`; } catch (e) {}
+  const tile = (tab, ic, a, h, cls) => `<button class="tile ${cls}" onclick="buzz();V.tab='${tab}';render()"><span class="ti">${ic}</span><span>${tx(a, h)}</span></button>`;
+  return header(nm, shiftName(V.shift) + ' · ' + esc(c.address), "go('route')") + `<div class="body"><div class="pad">
+    <div class="info" style="align-items:center"><span>${tx('Aaj dena hai', 'आज देना है')}</span><span>${pills(c.cow, c.bh)} <button class="spk" aria-label="${tx('Sunao', 'सुनाओ')}" onclick="speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></span></div>
+    ${c.changed || c.chhutti ? `<p class="badge" style="margin:0">${c.chhutti ? tx('🏖️ Aaj chhutti hai', '🏖️ आज छुट्टी है') : '✏️ ' + tx('Roz ka', 'रोज़ का') + ' ' + L(c.defCow + c.defBh) + (c.remark ? ' · ' + esc(c.remark) : '')}</p>` : ''}
+    ${bal}
+    <div class="tiles">
+      ${tile('change', '🥛', 'Doodh badlo', 'दूध बदलो', 't-milk')}
+      ${tile('saman', '🛍️', 'Saman diya', 'सामान दिया', 't-bag')}
+      ${tile('payment', '💵', 'Paisa mila', 'पैसा मिला', 't-pay')}
+      ${tile('chhutti', '🏖️', 'Chhutti', 'छुट्टी', 't-off')}
+    </div>
+    ${c.sales.length || c.paidToday ? `<p class="sec">${tx('AAJ IS GHAR KA', 'आज इस घर का')}</p>` + c.sales.map(x => `<div class="li"><span>🛍️ ${esc(x.item)} · ${x.qty} ${esc(x.unit)}</span><b>${R(x.amount)}</b></div>`).join('') + (c.paidToday ? `<div class="li"><span>💵 ${tx('Paisa mila', 'पैसा मिला')}</span><b style="color:var(--ok)">${R(c.paidToday)}</b></div>` : '') : ''}
+    ${!c.hasLoc ? `<button class="btn out" id="hlbtn" onclick="saveHouseLoc('${esc(c.id)}')">📍 ${tx('Ghar ki location save karo', 'घर की लोकेशन सेव करो')}</button><p class="rs" style="margin:-6px 0 0;text-align:center">${tx('Ghar ke darwaze pe khade hoke dabao (sirf ek baar)', 'घर के दरवाज़े पर खड़े होकर दबाओ (सिर्फ़ एक बार)')}</p>` : ''}
   </div></div>`;
 }
-function stepQ(id, d) { const a = $('#' + id); a.value = Math.max(0, (Number(a.value) || 0) + d); }
-function setQ(cow, bh, note) { $('#qcow').value = cow; $('#qbh').value = bh; $('#rem').value = note; }
+
+/* ----- doodh badlo ----- */
+async function changeView() {
+  if (isOwner() && !V.boyId) return ownerPickBoy('change');
+  const r = await ensureRoute(); const c = houseOf(r);
+  if (!c) return housePicker(r, 'change', tx('Doodh badlo', 'दूध बदलो'));
+  const nm = c.hindi || c.name;
+  const step = (id, ic, lab, val) => `<div class="qbox"><p class="qlab">${ic} ${lab}</p><div class="qty">
+      <button type="button" class="qbtn" aria-label="${lab} ${tx('kam', 'कम')}" onclick="stepQ('${id}',-0.5)">−</button>
+      <input class="in" id="${id}" type="number" inputmode="decimal" step="0.5" min="0" value="${val}" oninput="qLabel()">
+      <button type="button" class="qbtn" aria-label="${lab} ${tx('zyada', 'ज़्यादा')}" onclick="stepQ('${id}',0.5)">+</button></div>
+      <div class="chips lchips">${LCHIPS.map(n => `<button type="button" class="chip" onclick="$('#${id}').value=${n};qLabel();buzz()">${lch(n)}</button>`).join('')}</div></div>`;
+  return header(nm, shiftName(V.shift) + ' · ' + showDate(V.date), "V.tab='ghar';render()") + `<div class="body"><div class="pad">
+    <div class="info" style="align-items:center"><span>${tx('Roz ka', 'रोज़ का')}</span><span>${pills(c.defCow, c.defBh)} <button class="spk" aria-label="${tx('Sunao', 'सुनाओ')}" onclick="speak('${esc(nm).replace(/'/g, '')}, ${tx('roz', 'रोज़')} ${sayQty(c.defCow, c.defBh)}')">🔊</button></span></div>
+    <div class="chips"><button type="button" class="chip big" onclick="setQ(${c.defCow},${c.defBh},'');buzz()">✅ ${tx('Roz jaisa', 'रोज़ जैसा')}</button><button type="button" class="chip big" onclick="setQ(0,0,'${tx('Ghar band', 'घर बंद')}');buzz()">🔒 ${tx('Aaj band', 'आज बंद')}</button></div>
+    ${step('qcow', COW, tx('Gaay', 'गाय'), c.cow)}${step('qbh', BH, tx('Bhains', 'भैंस'), c.bh)}
+    <div><label class="lb" for="rem">${tx('Note (zaroori nahi)', 'नोट (ज़रूरी नहीं)')}</label><input class="in" id="rem" maxlength="100" value="${esc(c.remark)}" placeholder="${tx('Jaise: mehmaan aaye', 'जैसे: मेहमान आए')}"></div>
+    <button class="btn big" id="sbtn" data-def="${c.defCow},${c.defBh}" onclick="saveChange('${esc(c.id)}')">${tx('Save karo', 'सेव करो')}</button>
+  </div></div>`;
+}
+function stepQ(id, d) { const a = $('#' + id); a.value = Math.max(0, (Number(a.value) || 0) + d); buzz(15); qLabel(); }
+function setQ(cow, bh, note) { $('#qcow').value = cow; $('#qbh').value = bh; $('#rem').value = note; qLabel(); }
+function qLabel() {
+  const b = $('#sbtn'); if (!b) return;
+  const cow = Number($('#qcow').value) || 0, bh = Number($('#qbh').value) || 0;
+  b.textContent = cow + bh === 0 ? tx('🔒 Aaj band — save karo', '🔒 आज बंद — सेव करो') : `${cow ? COW + ' ' + L(cow) + ' ' : ''}${bh ? BH + ' ' + L(bh) + ' ' : ''}— ${tx('save karo', 'सेव करो')}`;
+}
 async function saveChange(id) {
-  const b = $('#sbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  const b = $('#sbtn'); b.disabled = true; const label = b.textContent; b.textContent = tx('Save ho raha hai…', 'सेव हो रहा है…');
+  const r0 = await ensureRoute(); const c = houseOf(r0) || {};
+  const prev = { cow: c.cow, bh: c.bh, remark: c.remark || '' };
   try {
-    const data = await withLoc({ custId: id, date: V.date, shift: V.shift, cow: Number($('#qcow').value) || 0, bh: Number($('#qbh').value) || 0, remark: $('#rem').value.trim(), boyId: V.boyId });
-    const r = await send('saveChange', data);
-    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Save ho gaya');
+    const cow = Number($('#qcow').value) || 0, bh = Number($('#qbh').value) || 0;
+    const data = await withLoc({ custId: id, date: V.date, shift: V.shift, cow, bh, remark: $('#rem').value.trim(), boyId: V.boyId });
+    const res = await send('saveChange', data);
+    const nm = c.hindi || c.name || '';
+    done(res.queued ? tx('Phone mein save. Net aate hi chala jayega.', 'फ़ोन में सेव। नेट आते ही चला जाएगा।') : nm + ': ' + (cow + bh ? (cow ? COW + ' ' + L(cow) + ' ' : '') + (bh ? BH + ' ' + L(bh) : '') : tx('aaj band', 'आज बंद')),
+      tx('Save ho gaya', 'सेव हो गया'),
+      res.queued ? null : () => api('saveChange', { custId: id, date: V.date, shift: V.shift, cow: prev.cow, bh: prev.bh, remark: prev.remark, boyId: V.boyId }));
     V.cache = {}; V.routeData = null; V.cust = null; go('route');
-  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+  } catch (e) { oops(e.message); b.disabled = false; b.textContent = label; }
+}
+
+/* ----- chhutti ----- */
+async function chhuttiView() {
+  const r = await ensureRoute(); const c = houseOf(r);
+  if (!c) return housePicker(r, 'chhutti', tx('Chhutti', 'छुट्टी'));
+  const d = new Date(), add = n => { const x = new Date(d); x.setDate(x.getDate() + n); return ymd(x); };
+  const quick = [[0, tx('Sirf aaj', 'सिर्फ़ आज')], [1, tx('Kal tak', 'कल तक')], [2, tx('3 din', '3 दिन')], [6, tx('1 hafta', '1 हफ़्ता')]];
+  return header(c.hindi || c.name, '🏖️ ' + tx('Ghar kuch din band', 'घर कुछ दिन बंद'), "V.tab='ghar';render()") + `<div class="body"><div class="pad">
+    <p class="rs" style="margin:0">${tx('In dino doodh nahi jayega, bill bhi nahi banega.', 'इन दिनों दूध नहीं जाएगा, बिल भी नहीं बनेगा।')}</p>
+    <div class="chips">${quick.map(([n, t]) => `<button type="button" class="chip big" style="flex:1 1 40%" onclick="$('#cf').value='${add(0)}';$('#ct').value='${add(n)}';buzz()">${t}</button>`).join('')}</div>
+    <div style="display:flex;gap:10px"><div style="flex:1"><label class="lb" for="cf">${tx('Kab se', 'कब से')}</label><input class="in" id="cf" type="date" value="${V.date}"></div><div style="flex:1"><label class="lb" for="ct">${tx('Kab tak', 'कब तक')}</label><input class="in" id="ct" type="date" value="${V.date}"></div></div>
+    <button class="btn big" id="chbtn" onclick="saveChhutti('${esc(c.id)}')">🏖️ ${tx('Chhutti save karo', 'छुट्टी सेव करो')}</button>
+  </div></div>`;
 }
 async function saveChhutti(id) {
   const from = $('#cf').value, to = $('#ct').value;
-  if (!from || !to || to < from) return toast('Tareekh sahi chuno');
-  try { await api('addChhutti', { custId: id, from, to }); toast('Chhutti save: ' + showDate(from) + ' se ' + showDate(to)); V.cache = {}; V.routeData = null; render(); } catch (e) { toast(e.message); }
+  if (!from || !to || to < from) return oops(tx('Tareekh sahi chuno', 'तारीख़ सही चुनो'));
+  const b = $('#chbtn'); b.disabled = true;
+  try { await api('addChhutti', { custId: id, from, to }); done(tx('Chhutti: ', 'छुट्टी: ') + showDate(from) + ' → ' + showDate(to), tx('Chhutti save ho gayi', 'छुट्टी सेव हो गई')); V.cache = {}; V.routeData = null; V.tab = 'ghar'; render(); }
+  catch (e) { oops(e.message); b.disabled = false; }
 }
 async function saveHouseLoc(id) {
-  const b = $('#hlbtn'); b.disabled = true; b.textContent = 'Location le rahe hain…';
+  const b = $('#hlbtn'); b.disabled = true; b.textContent = tx('Location le rahe hain…', 'लोकेशन ले रहे हैं…');
   LOC = null; const l = await getLoc();
-  if (!l.lat) { toast('Location nahi mili. Phone mein Location chalu karo aur app ko permission do.'); b.disabled = false; b.textContent = '📍 Ghar ki location save karo'; return; }
-  try { await api('saveHouseLoc', { custId: id, lat: l.lat, lng: l.lng, acc: l.acc }); toast('Ghar ki location save ho gayi'); V.cache = {}; V.routeData = null; render(); }
-  catch (e) { toast(e.message); b.disabled = false; b.textContent = '📍 Ghar ki location save karo'; }
+  if (!l.lat) { oops(tx('Location nahi mili. Phone mein Location chalu karo aur app ko permission do.', 'लोकेशन नहीं मिली। फ़ोन में लोकेशन चालू करो और ऐप को परमिशन दो।')); b.disabled = false; b.textContent = '📍 ' + tx('Ghar ki location save karo', 'घर की लोकेशन सेव करो'); return; }
+  try { await api('saveHouseLoc', { custId: id, lat: l.lat, lng: l.lng, acc: l.acc }); done(tx('Ghar ki location save ho gayi', 'घर की लोकेशन सेव हो गई'), tx('Location save', 'लोकेशन सेव')); V.cache = {}; V.routeData = null; render(); }
+  catch (e) { oops(e.message); b.disabled = false; b.textContent = '📍 ' + tx('Ghar ki location save karo', 'घर की लोकेशन सेव करो'); }
 }
 
-/* ----- boy: saman ----- */
+/* ----- saman ----- */
 async function samanView() {
   if (isOwner() && !V.boyId) return ownerPickBoy('saman');
   const [r, it] = await Promise.all([ensureRoute(), load('items', () => api('items'))]);
   V.items = it.items;
-  const c = r.customers.find(x => x.id === V.cust) || null;
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${c && x.id === c.id ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
-  const cats = [...new Set(it.items.map(i => i.cat))];
-  const itemOpts = cats.map(cat => `<optgroup label="${esc(cat)}">` + it.items.filter(i => i.cat === cat).map(i => `<option value="${esc(i.id)}" ${i.id === V.item ? 'selected' : ''}>${esc(i.name)} — ${R(i.rate)}/${esc(i.unit)}</option>`).join('') + '</optgroup>').join('');
-  const today = c && c.sales.length ? `<div><p class="sec">AAJ IS GHAR KO DIYA</p>` + c.sales.map(x => `<div class="li"><div><p style="font-weight:600">${esc(x.item)}</p><p class="rs">${x.qty} ${esc(x.unit)}</p></div><div style="display:flex;align-items:center;gap:6px"><b>${R(x.amount)}</b><button class="icon-btn" style="color:#B42318" aria-label="${esc(x.item)} hatao" onclick="delSale('${esc(x.id)}')">${svg('x', 20)}</button></div></div>`).join('') + `<div class="info" style="margin-top:10px"><span>Kul saman</span><b>${R(c.salesTotal)}</b></div></div>` : '';
+  const c = houseOf(r);
+  if (!c) return housePicker(r, 'saman', tx('Saman diya', 'सामान दिया'));
   const sel = V.items.find(i => i.id === V.item);
-  return header('Saman diya', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
-    <div><label class="lb" for="scust">Ghar</label><select class="in" id="scust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
-    ${c ? `
-    <div><label class="lb" for="sitem">Kya diya?</label><select class="in" id="sitem" onchange="V.item=this.value;updAmt()"><option value="">Item chuno…</option>${itemOpts}</select></div>
-    <div><label class="lb" for="sqty">Kitna (<span id="sunit">${sel ? esc(sel.unit) : 'qty'}</span>)</label><div class="qty">
-      <button type="button" class="qbtn" aria-label="Kam karo" onclick="stepS(-1)">−</button>
+  const grid = it.items.length ? `<div class="igrid">${it.items.map(i => `<button type="button" class="ibtn ${i.id === V.item ? 'on' : ''}" onclick="V.item='${esc(i.id)}';buzz();pickItem()"><b>${esc(i.name)}</b><span>${R(i.rate)}/${esc(i.unit)}</span></button>`).join('')}</div>` : `<p class="empty">${tx('Abhi koi saman list mein nahi. Owner se bolo.', 'अभी कोई सामान लिस्ट में नहीं। मालिक से बोलो।')}</p>`;
+  const today = c.sales.length ? `<div><p class="sec">${tx('AAJ IS GHAR KO DIYA', 'आज इस घर को दिया')}</p>` + c.sales.map(x => `<div class="li"><div><p style="font-weight:600">${esc(x.item)}</p><p class="rs">${x.qty} ${esc(x.unit)}</p></div><div style="display:flex;align-items:center;gap:6px"><b>${R(x.amount)}</b><button class="icon-btn" style="color:#B42318" aria-label="${esc(x.item)} ${tx('hatao', 'हटाओ')}" onclick="delSale('${esc(x.id)}')">${svg('x', 20)}</button></div></div>`).join('') + `<div class="info" style="margin-top:10px"><span>${tx('Kul saman', 'कुल सामान')}</span><b>${R(c.salesTotal)}</b></div></div>` : '';
+  return header(c.hindi || c.name, '🛍️ ' + tx('Saman diya', 'सामान दिया'), "V.tab='ghar';render()") + `<div class="body"><div class="pad">
+    <p class="qlab" style="margin:0">${tx('Kya diya?', 'क्या दिया?')}</p>${grid}
+    <div id="sform" style="display:${sel ? 'flex' : 'none'};flex-direction:column;gap:14px">
+    <div class="qbox"><p class="qlab">${tx('Kitna', 'कितना')} (<span id="sunit">${sel ? esc(sel.unit) : ''}</span>)</p><div class="qty">
+      <button type="button" class="qbtn" aria-label="${tx('Kam karo', 'कम करो')}" onclick="stepS(-1)">−</button>
       <input class="in" id="sqty" type="number" inputmode="decimal" step="0.25" min="0" value="1" oninput="updAmt()">
-      <button type="button" class="qbtn" aria-label="Zyada karo" onclick="stepS(1)">+</button></div></div>
-    <div class="info"><span>Amount</span><b id="samt">${sel ? R(sel.rate) : '—'}</b></div>
-    <label style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;min-height:44px"><input type="checkbox" id="spaid" style="width:22px;height:22px" onchange="$('#smode').style.display=this.checked?'flex':'none'"> Paisa abhi mil gaya</label>
-    <div class="chips" id="smode" style="display:none">${['Cash', 'UPI'].map((m, i) => `<button type="button" class="chip ${i === 0 ? 'on' : ''}" onclick="document.querySelectorAll('#smode .chip').forEach(x=>x.classList.toggle('on',x===this))">${m}</button>`).join('')}</div>
-    <button class="btn" id="ssbtn" onclick="saveSale('${esc(c.id)}')">Save karo</button>
-    ${today}` : '<p class="rs">Upar se ghar chuno.</p>'}
+      <button type="button" class="qbtn" aria-label="${tx('Zyada karo', 'ज़्यादा करो')}" onclick="stepS(1)">+</button></div></div>
+    <label class="ck"><input type="checkbox" id="spaid" onchange="$('#smode').style.display=this.checked?'flex':'none';updAmt()"> 💵 ${tx('Paisa abhi mil gaya', 'पैसा अभी मिल गया')}</label>
+    <div class="chips" id="smode" style="display:none">${['Cash', 'UPI'].map((m, i) => `<button type="button" class="chip big ${i === 0 ? 'on' : ''}" data-m="${m}" onclick="document.querySelectorAll('#smode .chip').forEach(x=>x.classList.toggle('on',x===this));buzz()">${m === 'Cash' ? '💵 Cash' : '📱 UPI'}</button>`).join('')}</div>
+    <button class="btn big" id="ssbtn" onclick="saveSale('${esc(c.id)}')">${tx('Save karo', 'सेव करो')}</button></div>
+    ${today}
   </div></div>`;
 }
+function pickItem() { document.querySelectorAll('.ibtn').forEach(b => b.classList.toggle('on', b.getAttribute('onclick').includes("'" + V.item + "'"))); $('#sform').style.display = 'flex'; $('#sqty').value = 1; updAmt(); }
 function updAmt() {
-  const i = (V.items || []).find(x => x.id === $('#sitem').value); const q = Number($('#sqty').value) || 0;
-  $('#sunit').textContent = i ? i.unit : 'qty'; $('#samt').textContent = i ? R(i.rate * q) : '—';
+  const i = (V.items || []).find(x => x.id === V.item); const q = Number($('#sqty').value) || 0; if (!i) return;
+  $('#sunit').textContent = i.unit;
+  $('#ssbtn').textContent = `${i.name} ${q} ${i.unit} = ${R(i.rate * q)} — ${tx('save karo', 'सेव करो')}`;
 }
-function stepS(d) { const i = (V.items || []).find(x => x.id === $('#sitem').value); const st = i && (i.unit === 'kg' || i.unit === 'L') ? 0.25 : 1; const a = $('#sqty'); a.value = Math.max(0, (Number(a.value) || 0) + d * st); updAmt(); }
+function stepS(d) { const i = (V.items || []).find(x => x.id === V.item); const st = i && (i.unit === 'kg' || i.unit === 'L') ? 0.25 : 1; const a = $('#sqty'); a.value = Math.max(0, (Number(a.value) || 0) + d * st); buzz(15); updAmt(); }
 async function saveSale(custId) {
-  const itemId = $('#sitem').value, qty = Number($('#sqty').value);
-  if (!itemId) return toast('Item chuno'); if (!(qty > 0)) return toast('Quantity daalo');
-  const paidNow = $('#spaid').checked; const mode = (document.querySelector('#smode .chip.on') || {}).textContent || 'Cash';
-  const b = $('#ssbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  const itemId = V.item, qty = Number($('#sqty').value);
+  if (!itemId) return oops(tx('Saman chuno', 'सामान चुनो')); if (!(qty > 0)) return oops(tx('Kitna diya, daalo', 'कितना दिया, डालो'));
+  const paidNow = $('#spaid').checked; const mode = (document.querySelector('#smode .chip.on') || {}).dataset.m || 'Cash';
+  const b = $('#ssbtn'); const label = b.textContent; b.disabled = true; b.textContent = tx('Save ho raha hai…', 'सेव हो रहा है…');
   try {
     const r = await send('saveSale', await withLoc({ custId, itemId, qty, paidNow, mode, date: V.date }));
-    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : 'Saman save ho gaya' + (paidNow ? ', payment bhi' : ''));
-    V.cache = {}; V.routeData = null; V.item = null; render();
-  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+    const i = V.items.find(x => x.id === itemId) || {};
+    done(r.queued ? tx('Phone mein save. Net aate hi chala jayega.', 'फ़ोन में सेव। नेट आते ही चला जाएगा।') : `${i.name} ${qty} ${i.unit} = ${R(i.rate * qty)}` + (paidNow ? ' · 💵 ' + tx('paisa bhi', 'पैसा भी') : ''), tx('Saman save ho gaya', 'सामान सेव हो गया'),
+      r.queued || !r.id ? null : () => api('deleteSale', { saleId: r.id }));
+    V.cache = {}; V.routeData = null; V.item = null; V.tab = 'ghar'; render();
+  } catch (e) { oops(e.message); b.disabled = false; b.textContent = label; }
 }
 async function delSale(id) {
-  if (!confirm('Ye entry hatani hai?')) return;
-  try { await api('deleteSale', { saleId: id }); toast('Entry hata di'); V.cache = {}; V.routeData = null; render(); } catch (e) { toast(e.message); }
+  if (!confirm(tx('Ye entry hatani hai?', 'ये एंट्री हटानी है?'))) return;
+  try { await api('deleteSale', { saleId: id }); done(tx('Entry hata di', 'एंट्री हटा दी')); V.cache = {}; V.routeData = null; render(); } catch (e) { oops(e.message); }
 }
 
-/* ----- boy: payment ----- */
+/* ----- paisa mila ----- */
 async function paymentView() {
   if (isOwner() && !V.boyId) return ownerPickBoy('payment');
-  const r = await ensureRoute();
-  const opts = r.customers.map(x => `<option value="${esc(x.id)}" ${x.id === V.cust ? 'selected' : ''}>${esc(x.hindi || x.name)} · ${esc(x.address)}</option>`).join('');
-  let info = '';
-  if (V.cust) {
-    const c = await load('cust_' + V.cust, () => api('customer', { custId: V.cust }));
-    info = `${c.purana ? `<div class="info" style="background:#fff;padding:0 2px"><span>Pichhla baaki</span><b>${R(c.purana)}</b></div>` : ''}
-      <div class="info"><span>${esc(c.month)} (aaj tak)</span><b>${R(c.bill)}</b></div>
-      <div class="info" style="background:#fff;padding:0 2px"><span>Jama</span><b>${R(c.paid)}</b></div>
-      <div class="info" style="background:#fff;padding:0 2px"><span>Kul baaki</span><b style="color:var(--warn);font-size:22px">${R(c.balance)}</b></div>
-      <div><label class="lb" for="amt">Kitna mila (₹)</label><input class="in" id="amt" type="number" inputmode="numeric" min="1" placeholder="Amount" style="font-size:22px;font-weight:700"></div>
-      <div><label class="lb">Kaise mila?</label><div class="chips" id="mode">${[['Cash', '💵 Cash'], ['UPI', '📱 UPI'], ['Bank', '🏦 Bank']].map(([m, t], i) => `<button type="button" class="chip big ${i === 0 ? 'on' : ''}" data-m="${m}" onclick="document.querySelectorAll('#mode .chip').forEach(x=>x.classList.toggle('on',x===this))">${t}</button>`).join('')}</div></div>
-      <button class="btn" id="pbtn" onclick="savePayment()">Save karo</button>`;
-  }
-  return header('Payment', showDate(V.date), "go('route')") + `<div class="body"><div class="pad">
-    <div><label class="lb" for="pcust">Ghar</label><select class="in" id="pcust" onchange="V.cust=this.value;render()"><option value="">Ghar chuno…</option>${opts}</select></div>
-    ${info || '<p class="rs">Upar se ghar chuno.</p>'}</div></div>`;
+  const r = await ensureRoute(); const h = houseOf(r);
+  if (!h) return housePicker(r, 'payment', tx('Paisa mila', 'पैसा मिला'));
+  const c = await load('cust_' + V.cust, () => api('customer', { custId: V.cust }));
+  const quick = [...new Set([c.balance > 0 ? Math.round(c.balance) : 0, 100, 200, 500, 1000].filter(x => x > 0))];
+  return header(h.hindi || h.name, '💵 ' + tx('Paisa mila', 'पैसा मिला'), "V.tab='ghar';render()") + `<div class="body"><div class="pad">
+    <div class="balcard"><span>${tx('Kul baaki', 'कुल बाकी')}</span><b>${R(c.balance)}</b><small>${c.purana ? tx('Pichhla', 'पिछला') + ' ' + R(c.purana) + ' + ' : ''}${esc(c.month)} ${R(c.bill)}${c.paid ? ' − ' + tx('jama', 'जमा') + ' ' + R(c.paid) : ''}</small>
+      <button class="spk" aria-label="${tx('Baaki sunao', 'बाकी सुनाओ')}" onclick="speak('${tx('Kul baaki', 'कुल बाकी')} ${Math.round(c.balance)} ${tx('rupaye', 'रुपये')}')">🔊</button></div>
+    <p class="qlab" style="margin:0">${tx('Kitna mila?', 'कितना मिला?')}</p>
+    <div class="chips">${quick.map((q, i) => `<button type="button" class="chip big" style="flex:1 1 28%" onclick="$('#amt').value=${q};payLabel();buzz()">${i === 0 && q === Math.round(c.balance) ? tx('Pura ', 'पूरा ') : ''}${R(q)}</button>`).join('')}</div>
+    <input class="in" id="amt" type="number" inputmode="numeric" min="1" placeholder="₹ ${tx('ya khud likho', 'या ख़ुद लिखो')}" style="font-size:24px;font-weight:800;text-align:center" oninput="payLabel()">
+    <div class="chips" id="mode">${[['Cash', '💵 Cash'], ['UPI', '📱 UPI']].map(([m, t], i) => `<button type="button" class="chip big ${i === 0 ? 'on' : ''}" data-m="${m}" onclick="document.querySelectorAll('#mode .chip').forEach(x=>x.classList.toggle('on',x===this));payLabel();buzz()">${t}</button>`).join('')}</div>
+    <button class="btn big pay" id="pbtn" onclick="savePayment()" disabled>${tx('Pehle amount chuno', 'पहले रकम चुनो')}</button>
+  </div></div>`;
+}
+function payLabel() {
+  const amt = Number($('#amt').value), m = (document.querySelector('#mode .chip.on') || {}).dataset.m || 'Cash', b = $('#pbtn');
+  b.disabled = !(amt > 0); b.textContent = amt > 0 ? `${R(amt)} ${m} — ${tx('save karo', 'सेव करो')}` : tx('Pehle amount chuno', 'पहले रकम चुनो');
 }
 async function savePayment() {
   const amt = Number($('#amt').value);
-  if (!(amt > 0)) return toast('Amount daalo');
+  if (!(amt > 0)) return oops(tx('Amount daalo', 'रकम डालो'));
   const mode = (document.querySelector('#mode .chip.on') || {}).dataset.m || 'Cash';
-  const b = $('#pbtn'); b.disabled = true; b.textContent = 'Save ho raha hai…';
+  const r0 = await ensureRoute(); const h = houseOf(r0) || {};
+  const b = $('#pbtn'); const label = b.textContent; b.disabled = true; b.textContent = tx('Save ho raha hai…', 'सेव हो रहा है…');
   try {
     const r = await send('savePayment', await withLoc({ custId: V.cust, date: V.date, amount: amt, mode }));
-    toast(r.queued ? 'Network nahi: phone mein save, baad mein jayega' : R(amt) + ' ' + mode + ' save ho gaya');
-    V.cache = {}; V.routeData = null; render();
-  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Save karo'; }
+    done(r.queued ? tx('Phone mein save. Net aate hi chala jayega.', 'फ़ोन में सेव। नेट आते ही चला जाएगा।') : `${h.hindi || h.name}: ${R(amt)} ${mode}`, `${Math.round(amt)} ${tx('rupaye save ho gaye', 'रुपये सेव हो गए')}`);
+    V.cache = {}; V.routeData = null; V.tab = 'ghar'; render();
+  } catch (e) { oops(e.message); b.disabled = false; b.textContent = label; }
+}
+
+/* ----- mera din: boy ka aaj ka hisaab (bharosa: jo liya wo saaf dikhe) ----- */
+async function dinView() {
+  const boyId = isOwner() ? V.boyId : null;
+  const get = sh => load('route_' + (boyId || '') + V.date + sh, () => api('route', { date: V.date, boyId, shift: sh }));
+  const [a, b] = await Promise.all([get('Subh'), get('Sham')]);
+  const sum = r => { const t = { cow: 0, bh: 0, n: r.customers.length, chg: 0 }; r.customers.forEach(c => { t.cow += c.cow; t.bh += c.bh; if (c.changed || c.cow + c.bh === 0) t.chg++; }); return t; };
+  const sa = sum(a), sb = sum(b);
+  const all = {}; a.customers.concat(b.customers).forEach(c => { all[c.id] = c; });
+  const list = Object.values(all);
+  const paid = list.filter(c => c.paidToday), sold = list.filter(c => c.salesTotal);
+  const totPaid = paid.reduce((t, c) => t + c.paidToday, 0), totSold = sold.reduce((t, c) => t + c.salesTotal, 0);
+  const shCard = (s, t) => t.n ? `<div class="li"><span>${shiftName(s)} · ${t.n} ${tx('ghar', 'घर')}</span><span>${pills(t.cow, t.bh)}${t.chg ? ` <span class="badge">${t.chg} ${tx('badlaav', 'बदलाव')}</span>` : ''}</span></div>` : '';
+  return header(tx('Mera din', 'मेरा दिन'), (a.boy.name || '') + ' · ' + showDate(V.date)) + `<div class="body"><div class="pad">
+    <div class="balcard ok"><span>💵 ${tx('Aaj maine paise liye', 'आज मैंने पैसे लिए')}</span><b>${R(totPaid)}</b><small>${paid.length} ${tx('ghar se', 'घरों से')} · ${tx('ye paise malik ko dene hain', 'ये पैसे मालिक को देने हैं')}</small>
+      <button class="spk" aria-label="${tx('Sunao', 'सुनाओ')}" onclick="speak('${tx('Aaj', 'आज')} ${Math.round(totPaid)} ${tx('rupaye liye', 'रुपये लिए')}')">🔊</button></div>
+    <p class="sec">${tx('DOODH', 'दूध')}</p>${shCard('Subh', sa)}${shCard('Sham', sb)}
+    ${paid.length ? `<p class="sec">${tx('KISNE PAISE DIYE', 'किसने पैसे दिए')}</p>` + paid.map(c => `<div class="li"><span>${esc(c.hindi || c.name)}</span><b style="color:var(--ok)">${R(c.paidToday)}</b></div>`).join('') : ''}
+    ${sold.length ? `<p class="sec">${tx('SAMAN DIYA', 'सामान दिया')} · ${R(totSold)}</p>` + sold.map(c => `<div class="li"><span>${esc(c.hindi || c.name)}</span><b>${R(c.salesTotal)}</b></div>`).join('') : ''}
+    <p class="rs" style="text-align:center;margin-top:8px">${tx('Kuch galat dikhe to malik ko turant batao.', 'कुछ ग़लत दिखे तो मालिक को तुरंत बताओ।')}</p>
+  </div></div>`;
 }
 
 /* ----- owner: Aaj ----- */
@@ -809,7 +939,7 @@ function aboutView() {
 }
 
 /* ============ render ============ */
-const BOY_NAV = [['route', 'Mera Route', 'route'], ['change', 'Badlaav', 'edit'], ['saman', 'Saman', 'bag'], ['payment', 'Payment', 'pay']];
+const BOY_NAV = [['route', 'Mera Route', 'route'], ['din', 'Mera din', 'pay']];
 const OWNER_NAV = [['aaj', 'Aaj', 'sum'], ['bills', 'Bills', 'bill'], ['route', 'Route', 'route']];
 let renderSeq = 0;
 async function render() {
@@ -824,7 +954,7 @@ async function render() {
   app.innerHTML = header('…') + '<div class="body"><div class="spin" role="status" aria-label="Load ho raha hai"></div></div>' + navHtml;
   try {
     if (V.billId && V.tab === 'bills') { const html = await billView(); if (seq === renderSeq) app.innerHTML = html + navHtml + (V.menu ? menuHtml() : ''); return; }
-    const views = { rates: ratesView, staff: staffView, route: routeView, change: changeView, saman: samanView, payment: paymentView, aaj: aajView, bills: billsView };
+    const views = { rates: ratesView, staff: staffView, route: routeView, change: changeView, saman: samanView, payment: paymentView, ghar: houseView, chhutti: chhuttiView, din: dinView, aaj: aajView, bills: billsView };
     const html = await (views[V.tab] || routeView)();
     if (seq !== renderSeq) return;
     app.innerHTML = html + navHtml + (V.menu ? menuHtml() : '');
