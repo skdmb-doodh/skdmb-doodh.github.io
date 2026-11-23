@@ -93,6 +93,7 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 .langbtn{background:#fff;color:var(--b);border:0;border-radius:18px;min-width:40px;height:36px;font-weight:800;font-size:16px;cursor:pointer;flex:none}
 .doneov{position:fixed;inset:0;background:rgba(5,96,58,.92);z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;animation:fi .15s ease-out}.donecard{text-align:center;color:#fff;display:flex;flex-direction:column;gap:16px;align-items:center;max-width:360px;width:100%}.tick{width:120px;height:120px;border-radius:60px;background:#fff;color:#05603A;font-size:76px;font-weight:900;display:flex;align-items:center;justify-content:center;animation:pop .3s ease-out}.dmsg{margin:0;font-size:22px;font-weight:800}.doneov .btn.out{background:#fff;color:#B42318;border:0}
 @keyframes pop{0%{transform:scale(.4)}80%{transform:scale(1.1)}100%{transform:scale(1)}}@keyframes fi{from{opacity:0}to{opacity:1}}
+.qkbar{background:#FFF8E1;border:1px solid #F2C94C;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}.qkgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qk{min-height:58px;border-radius:14px;border:1px solid #F2C94C;background:#fff;font-size:18px;white-space:nowrap;font-weight:800;cursor:pointer;color:#3A2A00}.qk:active{transform:scale(.96)}.qk-off{background:#FEE4E2;border-color:#F5A3A0;color:#B42318}.qk-ok{background:#E7F6EC;border-color:#8FD3AE;color:#05603A}.qk[disabled]{opacity:.5}
 </style>
 </head>
 <body>
@@ -391,9 +392,10 @@ async function houseView() {
   return header(nm, shiftName(V.shift) + ' · ' + esc(c.address), "go('route')") + `<div class="body"><div class="pad">
     <div class="info" style="align-items:center"><span>${tx('Aaj dena hai', 'आज देना है')}</span><span>${pills(c.cow, c.bh)} <button class="spk" aria-label="${tx('Sunao', 'सुनाओ')}" onclick="speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></span></div>
     ${c.changed || c.chhutti ? `<p class="badge" style="margin:0">${c.chhutti ? tx('🏖️ Aaj chhutti hai', '🏖️ आज छुट्टी है') : '✏️ ' + tx('Roz ka', 'रोज़ का') + ' ' + L(c.defCow + c.defBh) + (c.remark ? ' · ' + esc(c.remark) : '')}</p>` : ''}
+    ${quickBar(c)}
     ${bal}
     <div class="tiles">
-      ${tile('change', '🥛', 'Doodh badlo', 'दूध बदलो', 't-milk')}
+      ${tile('change', '🥛', 'Doodh (aur)', 'दूध (और)', 't-milk')}
       ${tile('saman', '🛍️', 'Saman diya', 'सामान दिया', 't-bag')}
       ${tile('payment', '💵', 'Paisa mila', 'पैसा मिला', 't-pay')}
       ${tile('chhutti', '🏖️', 'Chhutti', 'छुट्टी', 't-off')}
@@ -401,6 +403,34 @@ async function houseView() {
     ${c.sales.length || c.paidToday ? `<p class="sec">${tx('AAJ IS GHAR KA', 'आज इस घर का')}</p>` + c.sales.map(x => `<div class="li"><span>🛍️ ${esc(x.item)} · ${x.qty} ${esc(x.unit)}</span><b>${R(x.amount)}</b></div>`).join('') + (c.paidToday ? `<div class="li"><span>💵 ${tx('Paisa mila', 'पैसा मिला')}</span><b style="color:var(--ok)">${R(c.paidToday)}</b></div>` : '') : ''}
     ${!c.hasLoc ? `<button class="btn out" id="hlbtn" onclick="saveHouseLoc('${esc(c.id)}')">📍 ${tx('Ghar ki location save karo', 'घर की लोकेशन सेव करो')}</button><p class="rs" style="margin:-6px 0 0;text-align:center">${tx('Ghar ke darwaze pe khade hoke dabao (sirf ek baar)', 'घर के दरवाज़े पर खड़े होकर दबाओ (सिर्फ़ एक बार)')}</p>` : ''}
   </div></div>`;
+}
+
+/* ek tap mein doodh badlo: dabate hi save, 6 second tak "Wapas lo" */
+function quickBar(c) {
+  const id = esc(c.id), q = (cow, bh, note, lab, cls) => `<button type="button" class="qk ${cls || ''}" onclick="quickSave('${id}',${cow},${bh},'${note}')">${lab}</button>`;
+  const types = []; if (c.defCow || c.cow) types.push(['cow', COW]); if (c.defBh || c.bh) types.push(['bh', BH]);
+  if (!types.length) types.push(['cow', COW]);
+  const btn = [];
+  if (c.cow + c.bh > 0) btn.push(q(0, 0, tx('Ghar band', 'घर बंद'), '🔒 ' + tx('Aaj band', 'आज बंद'), 'qk-off'));
+  types.forEach(([k, ic]) => {
+    const cur = k === 'cow' ? c.cow : c.bh;
+    if (cur >= 0.5) btn.push(q(k === 'cow' ? cur - 0.5 : c.cow, k === 'bh' ? cur - 0.5 : c.bh, '', ic + ' −½'));
+    btn.push(q(k === 'cow' ? cur + 0.5 : c.cow, k === 'bh' ? cur + 0.5 : c.bh, '', ic + ' +½'));
+  });
+  if (c.changed) btn.unshift(q(c.defCow, c.defBh, '', '↩️ ' + tx('Roz jaisa', 'रोज़ जैसा'), 'qk-ok'));
+  return `<div class="qkbar"><p class="qlab" style="margin:0">⚡ ${tx('Aaj ke liye turant badlo', 'आज के लिए तुरंत बदलो')}</p><div class="qkgrid">${btn.join('')}</div></div>`;
+}
+async function quickSave(id, cow, bh, note) {
+  const r0 = await ensureRoute(); const c = houseOf(r0) || {};
+  const prev = { cow: c.cow, bh: c.bh, remark: c.remark || '' };
+  document.querySelectorAll('.qk').forEach(b => b.disabled = true);
+  try {
+    const res = await send('saveChange', await withLoc({ custId: id, date: V.date, shift: V.shift, cow, bh, remark: note, boyId: V.boyId }));
+    done(res.queued ? tx('Phone mein save. Net aate hi chala jayega.', 'फ़ोन में सेव। नेट आते ही चला जाएगा।') : (c.hindi || c.name) + ': ' + (cow + bh ? (cow ? COW + ' ' + L(cow) + ' ' : '') + (bh ? BH + ' ' + L(bh) : '') : tx('aaj band', 'आज बंद')),
+      tx('Save ho gaya', 'सेव हो गया'),
+      res.queued ? null : () => api('saveChange', { custId: id, date: V.date, shift: V.shift, cow: prev.cow, bh: prev.bh, remark: prev.remark, boyId: V.boyId }));
+    V.cache = {}; V.routeData = null; V.cust = null; go('route');
+  } catch (e) { oops(e.message); document.querySelectorAll('.qk').forEach(b => b.disabled = false); }
 }
 
 /* ----- doodh badlo ----- */
