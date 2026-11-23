@@ -530,7 +530,7 @@ async function billsView() {
 }
 
 /* ----- owner: ek ghar ka bill + entries ----- */
-function openBill(id) { V.billId = id; render(); }
+function openBill(id) { V.billId = id; V.pdfFile = null; render(); }
 async function billView() {
   const p = curPeriod();
   const [{ bill: d }, ent] = await Promise.all([
@@ -727,16 +727,28 @@ async function deliverFile(blob, name) {
   if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
+// Android Chrome allows share() only right after a tap. So: tap 1 fetches the PDF, tap 2 shares it.
+function downloadFile(file) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
+function sendReadyPdf() {
+  const f = V.pdfFile; if (!f) return;
+  if (navigator.canShare && navigator.canShare({ files: [f] })) {
+    navigator.share({ files: [f], title: f.name }).catch(e => { if (e.name !== 'AbortError') { downloadFile(f); toast('PDF download ho gayi'); } });
+  } else { downloadFile(f); toast('PDF download ho gayi'); }
+}
 async function sharePdf() {
-  const b = $('#pdfbtn'); b.disabled = true; b.textContent = 'PDF ban rahi hai…';
+  const b = $('#pdfbtn');
+  if (V.pdfFile && V.pdfFor === V.billId + '|' + JSON.stringify(curPeriod())) return sendReadyPdf();
+  b.disabled = true; b.textContent = 'PDF ban rahi hai…';
   try {
     const d = V.billMsg;
-    if (DEMO) { await deliverFile(makeBillPdf(d), `${d.id} ${d.name} - ${d.month}.pdf`); return; }
+    if (DEMO) { await deliverFile(makeBillPdf(d), `${d.id} ${d.name} - ${d.month}.pdf`); b.textContent = 'PDF share / download karo'; return; }
     const p = curPeriod(); const r = await api('billPdf', { custId: V.billId, from: p.from, to: p.to });
     const bytes = Uint8Array.from(atob(r.base64), c => c.charCodeAt(0));
-    await deliverFile(new Blob([bytes], { type: 'application/pdf' }), r.name);
-  } catch (e) { if (e.name !== 'AbortError') toast(e.message); }
-  finally { b.disabled = false; b.textContent = 'PDF share / download karo'; }
+    V.pdfFile = new File([bytes], r.name, { type: 'application/pdf' }); V.pdfFor = V.billId + '|' + JSON.stringify(p);
+    b.textContent = '📤 PDF taiyaar – bhejne ke liye dabao';
+    if (!$('#pdfdl')) b.insertAdjacentHTML('afterend', '<button class="btn out" id="pdfdl" onclick="downloadFile(V.pdfFile);toast(\'PDF download ho gayi\')">⬇️ Sirf phone mein save karo</button>');
+  } catch (e) { toast(e.message); b.textContent = 'PDF share / download karo'; }
+  finally { b.disabled = false; }
 }
 async function allInOne() {
   if (DEMO) return toast('Demo mein PDF nahi banti; asli app mein Drive mein banegi');
