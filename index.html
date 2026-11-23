@@ -94,6 +94,8 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 .doneov{position:fixed;inset:0;background:rgba(5,96,58,.92);z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;animation:fi .15s ease-out}.donecard{text-align:center;color:#fff;display:flex;flex-direction:column;gap:16px;align-items:center;max-width:360px;width:100%}.tick{width:120px;height:120px;border-radius:60px;background:#fff;color:#05603A;font-size:76px;font-weight:900;display:flex;align-items:center;justify-content:center;animation:pop .3s ease-out}.dmsg{margin:0;font-size:22px;font-weight:800}.doneov .btn.out{background:#fff;color:#B42318;border:0}
 @keyframes pop{0%{transform:scale(.4)}80%{transform:scale(1.1)}100%{transform:scale(1)}}@keyframes fi{from{opacity:0}to{opacity:1}}
 .qkbar{background:#FFF8E1;border:1px solid #F2C94C;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}.qkgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qk{min-height:58px;border-radius:14px;border:1px solid #F2C94C;background:#fff;font-size:18px;white-space:nowrap;font-weight:800;cursor:pointer;color:#3A2A00}.qk:active{transform:scale(.96)}.qk-off{background:#FEE4E2;border-color:#F5A3A0;color:#B42318}.qk-ok{background:#E7F6EC;border-color:#8FD3AE;color:#05603A}.qk[disabled]{opacity:.5}
+.dv{flex:none;width:62px;height:62px;border-radius:16px;border:2px solid #12B76A;background:#fff;color:#05603A;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0;margin-left:2px}.dv span{font-size:26px;font-weight:900;line-height:1}.dv small{font-size:12px;font-weight:800}.dv:active{transform:scale(.94)}.dv-on{background:#12B76A;color:#fff;border-color:#12B76A}.dv-ask{background:#FEE4E2;border-color:#F04438;color:#B42318}.dv-off{border:0;background:transparent;color:var(--grey);font-size:22px;cursor:default}
+.row.isdone{background:#F1FBF5}.row.isdone .rn,.row.isdone .rs,.row.isdone .pill,.row.isdone .hno{opacity:.55}.sumbar .prog{background:#E7F6EC}.sumbar .prog b{color:#05603A}
 </style>
 </head>
 <body>
@@ -341,6 +343,7 @@ async function routeView() {
   if (isOwner() && !boyId) return ownerPickBoy();
   const r = await load('route_' + (boyId || '') + V.date + V.shift, () => api('route', { date: V.date, boyId, shift: V.shift }));
   V.routeData = r;
+  r.customers.forEach(c => { const k = V.date + '|' + V.shift + '|' + c.id; if (k in DLOC) { if (!!DLOC[k] === !!c.done) delete DLOC[k]; else c.done = DLOC[k]; } });
   const tot = r.customers.reduce((s, c) => s + c.cow + c.bh, 0);
   const totCow = r.customers.reduce((s, c) => s + c.cow, 0), totBh = r.customers.reduce((s, c) => s + c.bh, 0);
   const nChg = r.customers.filter(c => c.changed || c.cow + c.bh === 0).length;
@@ -349,20 +352,53 @@ async function routeView() {
     const st = band ? 'st-band' : c.changed ? 'st-chg' : '';
     const note = c.chhutti ? tx('🏖️ Chhutti', '🏖️ छुट्टी') : band ? tx('🔒 Band', '🔒 बंद') : c.changed ? '✏️ ' + (c.remark || tx('Badlaav', 'बदलाव')) : '';
     const nm = c.hindi || c.name, h = hno(c.address);
-    return `<div class="row hrow ${st}" role="button" tabindex="0" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="openHouse('${esc(c.id)}')">
+    return `<div class="row hrow ${st} ${c.done ? 'isdone' : ''}" id="hr_${esc(c.id)}" role="button" tabindex="0" data-name="${esc((c.name + ' ' + c.hindi + ' ' + c.address).toLowerCase())}" onclick="openHouse('${esc(c.id)}')">
       <div class="hno" aria-hidden="true">${h ? esc(h) : i + 1}</div>
       <div style="flex:1;min-width:0"><p class="rn big">${esc(nm)}</p><p class="rs">${c.hindi && !HI() ? esc(c.name) + ' · ' : ''}${esc(c.address)}</p>
         ${note ? `<span class="badge">${esc(note)}</span>` : ''}${c.salesTotal ? `<span class="badge" style="color:#1849A9;background:#EAF2FF;margin-left:4px">🛍️ ${R(c.salesTotal)}</span>` : ''}${c.paidToday ? `<span class="badge" style="color:var(--ok);background:#E7F6EC;margin-left:4px">💵 ${R(c.paidToday)}</span>` : ''}</div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${pills(c.cow, c.bh)}
-        <button class="spk" aria-label="${esc(nm)} ${tx('sunao', 'सुनाओ')}" onclick="event.stopPropagation();speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></div></div>`;
+        <button class="spk" aria-label="${esc(nm)} ${tx('sunao', 'सुनाओ')}" onclick="event.stopPropagation();speak('${esc(nm).replace(/'/g, '')}, ${sayQty(c.cow, c.bh)}')">🔊</button></div>
+      ${band ? '<div class="dv dv-off" aria-hidden="true">—</div>' : delivBtn(c)}</div>`;
   }).join('');
   return header(isOwner() ? r.boy.name + ' ka route' : tx('Mera Route', 'मेरा रूट'), `${r.boy.name} · ${showDate(r.date)}`, isOwner() ? "V.boyId=null;render()" : null)
     + `<div class="body">${shiftChips()}
-    <div class="sumbar"><div><b>${r.customers.length}</b><span>${tx('ghar', 'घर')}</span></div><div><b>${L(tot)}</b><span>${totCow ? COW + ' ' + L(totCow) : ''} ${totBh ? BH + ' ' + L(totBh) : ''}</span></div><div class="${nChg ? 'hot' : ''}"><b>${nChg}</b><span>${tx('badlaav', 'बदलाव')}</span></div>
+    <div class="sumbar"><div class="prog"><b id="dvcount">✅ ${r.customers.filter(c => c.done).length}/${r.customers.filter(c => c.cow + c.bh > 0).length}</b><span>${tx('diye', 'दिए')}</span></div><div><b>${L(tot)}</b><span>${totCow ? COW + ' ' + L(totCow) : ''} ${totBh ? BH + ' ' + L(totBh) : ''}</span></div><div class="${nChg ? 'hot' : ''}"><b>${nChg}</b><span>${tx('badlaav', 'बदलाव')}</span></div>
       <button class="spk" style="align-self:center" aria-label="${tx('Aaj ka doodh sunao', 'आज का दूध सुनाओ')}" onclick="speak('${tx('Aaj', 'आज')} ${r.customers.length} ${tx('ghar', 'घर')}, ${sayQty(totCow, totBh)}${nChg ? ', ' + nChg + ' ' + tx('badlaav', 'बदलाव') : ''}')">🔊</button></div>
     <div class="search"><input class="in" type="search" placeholder="🔎 ${tx('Naam ya makaan number', 'नाम या मकान नंबर')}" oninput="filterRows(this.value)" aria-label="${tx('Ghar khojo', 'घर खोजो')}"></div>
     <div id="rows">${rows || `<p class="empty">${tx('Is time koi ghar nahi', 'इस समय कोई घर नहीं')}</p>`}</div>
     <div class="legend"><span><i style="background:#fff;border:1px solid var(--line)"></i>${tx('Roz jaisa', 'रोज़ जैसा')}</span><span><i style="background:#FFF1C2"></i>${tx('Badlaav', 'बदलाव')}</span><span><i style="background:#FEE4E2"></i>${tx('Band / chhutti', 'बंद / छुट्टी')}</span></div></div>`;
+}
+/* ✅ ek tap mein "doodh de diya": turant hara, peeche se save (net na ho to phone mein) */
+function delivBtn(c) {
+  return c.done ? `<button class="dv dv-on" aria-label="${tx('Diya', 'दिया')} ${c.done}" onclick="event.stopPropagation();undoDeliv('${esc(c.id)}',this)"><span>✓</span><small>${c.done}</small></button>`
+    : `<button class="dv" aria-label="${esc(c.hindi || c.name)} ${tx('ko doodh diya', 'को दूध दिया')}" onclick="event.stopPropagation();markDeliv('${esc(c.id)}')"><span>✓</span><small>${tx('Diya', 'दिया')}</small></button>`;
+}
+const DLOC = {}; // abhi-abhi dabaye ✅, jab tak server na maane
+function setDone(id, val) {
+  DLOC[V.date + '|' + V.shift + '|' + id] = val;
+  const r = V.routeData; if (!r) return; const c = r.customers.find(x => x.id === id); if (!c) return;
+  c.done = val; const row = $('#hr_' + id); if (!row) return;
+  row.classList.toggle('isdone', !!val);
+  const old = row.querySelector('.dv'); if (old) old.outerHTML = delivBtn(c);
+  const n = $('#dvcount'); if (n) n.textContent = '✅ ' + r.customers.filter(x => x.done).length + '/' + r.customers.filter(x => x.cow + x.bh > 0).length;
+}
+async function markDeliv(id) {
+  const t = new Date().toTimeString().slice(0, 5);
+  buzz(35); setDone(id, t);
+  const r = V.routeData, left = r ? r.customers.filter(x => x.cow + x.bh > 0 && !x.done).length : 1;
+  if (r && left === 0) done(tx('Aaj ke sab ghar ho gaye!', 'आज के सब घर हो गए!'), tx('Sab ghar ho gaye', 'सब घर हो गए'));
+  try {
+    const res = await send('markDelivered', await withLoc({ custId: id, date: V.date, shift: V.shift, boyId: V.boyId }));
+    if (res.queued) toast(tx('Net nahi: phone mein save', 'नेट नहीं: फ़ोन में सेव'));
+  } catch (e) { setDone(id, ''); oops(e.message); }
+}
+let UNDO_ARM = null;
+async function undoDeliv(id, btn) {
+  if (UNDO_ARM !== id) { UNDO_ARM = id; buzz(20); btn.innerHTML = `<span>↩️</span><small>${tx('Hatao?', 'हटाओ?')}</small>`; btn.classList.add('dv-ask'); setTimeout(() => { if (UNDO_ARM === id) { UNDO_ARM = null; const c = V.routeData && V.routeData.customers.find(x => x.id === id); if (c && c.done) setDone(id, c.done); } }, 3000); return; }
+  UNDO_ARM = null; const prev = (V.routeData.customers.find(x => x.id === id) || {}).done;
+  setDone(id, ''); buzz([60, 40, 60]);
+  try { await send('markDelivered', { custId: id, date: V.date, shift: V.shift, boyId: V.boyId, undo: true }); }
+  catch (e) { setDone(id, prev); oops(e.message); }
 }
 function filterRows(q) { q = q.toLowerCase(); document.querySelectorAll('#rows .row').forEach(r => r.style.display = r.dataset.name.includes(q) ? '' : 'none'); }
 function openHouse(id) { buzz(); V.cust = id; V.tab = 'ghar'; render(); }
@@ -590,13 +626,13 @@ async function dinView() {
   const boyId = isOwner() ? V.boyId : null;
   const get = sh => load('route_' + (boyId || '') + V.date + sh, () => api('route', { date: V.date, boyId, shift: sh }));
   const [a, b] = await Promise.all([get('Subh'), get('Sham')]);
-  const sum = r => { const t = { cow: 0, bh: 0, n: r.customers.length, chg: 0 }; r.customers.forEach(c => { t.cow += c.cow; t.bh += c.bh; if (c.changed || c.cow + c.bh === 0) t.chg++; }); return t; };
+  const sum = r => { const t = { cow: 0, bh: 0, n: r.customers.length, chg: 0, done: 0, give: 0 }; r.customers.forEach(c => { t.cow += c.cow; t.bh += c.bh; if (c.changed || c.cow + c.bh === 0) t.chg++; if (c.cow + c.bh > 0) t.give++; if (c.done) t.done++; }); return t; };
   const sa = sum(a), sb = sum(b);
   const all = {}; a.customers.concat(b.customers).forEach(c => { all[c.id] = c; });
   const list = Object.values(all);
   const paid = list.filter(c => c.paidToday), sold = list.filter(c => c.salesTotal);
   const totPaid = paid.reduce((t, c) => t + c.paidToday, 0), totSold = sold.reduce((t, c) => t + c.salesTotal, 0);
-  const shCard = (s, t) => t.n ? `<div class="li"><span>${shiftName(s)} · ${t.n} ${tx('ghar', 'घर')}</span><span>${pills(t.cow, t.bh)}${t.chg ? ` <span class="badge">${t.chg} ${tx('badlaav', 'बदलाव')}</span>` : ''}</span></div>` : '';
+  const shCard = (s, t) => t.n ? `<div class="li"><span>${shiftName(s)} · ✅ ${t.done}/${t.give} ${tx('diye', 'दिए')}</span><span>${pills(t.cow, t.bh)}${t.chg ? ` <span class="badge">${t.chg} ${tx('badlaav', 'बदलाव')}</span>` : ''}</span></div>` : '';
   return header(tx('Mera din', 'मेरा दिन'), (a.boy.name || '') + ' · ' + showDate(V.date)) + `<div class="body"><div class="pad">
     <div class="balcard ok"><span>💵 ${tx('Aaj maine paise liye', 'आज मैंने पैसे लिए')}</span><b>${R(totPaid)}</b><small>${paid.length} ${tx('ghar se', 'घरों से')} · ${tx('ye paise malik ko dene hain', 'ये पैसे मालिक को देने हैं')}</small>
       <button class="spk" aria-label="${tx('Sunao', 'सुनाओ')}" onclick="speak('${tx('Aaj', 'आज')} ${Math.round(totPaid)} ${tx('rupaye liye', 'रुपये लिए')}')">🔊</button></div>
@@ -621,7 +657,7 @@ async function aajView() {
       const diff = s.diff == null ? `<button class="chip" onclick="openStock('${esc(b.id)}','${s.shift}')">Doodh diya? daalo</button>`
         : Math.abs(s.diff) < 0.01 ? `<span class="badge" style="color:var(--ok);background:#E7F6EC">✅ hisaab barabar</span>`
         : `<span class="badge" style="color:#B42318;background:#FEE4E2">⚠️ ${s.diff > 0 ? L(s.diff) + ' ka hisaab nahi' : L(-s.diff) + ' zyada baanta?'}</span> <button class="chip" onclick="openStock('${esc(b.id)}','${s.shift}')">Badlo</button>`;
-      return `<div class="li" style="padding:6px 0"><div><p style="margin:0">${s.shift === 'Subh' ? '☀️' : '🌙'} ${L(s.cow + s.bh)} <span class="rs">(${COW} ${L(s.cow)} · ${BH} ${L(s.bh)} · ${s.houses} ghar${s.band ? ' · ' + s.band + ' band' : ''})</span></p></div><div style="text-align:right">${diff}</div></div>`;
+      return `<div class="li" style="padding:6px 0"><div><p style="margin:0">${s.shift === 'Subh' ? '☀️' : '🌙'} ${L(s.cow + s.bh)} <span class="rs">(${COW} ${L(s.cow)} · ${BH} ${L(s.bh)} · ${s.houses} ghar${s.band ? ' · ' + s.band + ' band' : ''})</span>${s.toGive ? `<br><span class="badge" style="color:${s.done >= s.toGive ? 'var(--ok)' : '#7A4B00'};background:${s.done >= s.toGive ? '#E7F6EC' : '#FFF1C2'}">✅ ${s.done}/${s.toGive} diye</span>` : ''}</p></div><div style="text-align:right">${diff}</div></div>`;
     }).join('');
     return `<div class="card" style="padding:12px 14px;margin-bottom:10px;border-left-color:var(--b)">
       <div style="display:flex;justify-content:space-between;align-items:center"><p style="margin:0;font-weight:700;font-size:17px">${esc(b.name)} <span class="rs">· ${esc(b.route)}</span></p><p class="rq">${L(b.total)}</p></div>
@@ -640,6 +676,7 @@ async function aajView() {
     <div><p class="sec">BOY-WISE</p>${boys}</div>
     ${r.chhutti.length ? `<div><p class="sec">AAJ CHHUTTI (${r.chhutti.length})</p><p class="rs" style="margin:0">${r.chhutti.map(esc).join(', ')}</p></div>` : ''}
     ${r.items && r.items.length ? `<div><p class="sec">SAMAN BIKA (${R(r.totals.saman)})</p>` + r.items.map(i => `<div class="li"><p>${esc(i.item)}</p><p class="rs" style="margin:0">${Math.round(i.qty * 100) / 100} ${esc(i.unit)} · ${R(i.amount)}</p></div>`).join('') + '</div>' : ''}
+    ${r.farDeliv && r.farDeliv.length ? `<div><p class="sec" style="color:#B42318">⚠️ GHAR SE DOOR "DIYA" DABAYA (${r.farDeliv.length})</p>` + r.farDeliv.map(d => `<div class="li"><div><p style="margin:0">${esc(d.name)} <span class="rs">${d.shift === 'Subh' ? '☀️' : '🌙'} ${esc(d.time)}</span></p></div>${farTxt(d.far)}</div>`).join('') + '</div>' : ''}
     <div><p class="sec">BADLAAV (location ke saath)</p>${ch || '<p class="rs">Is din koi badlaav nahi</p>'}</div>
   </div><p class="credit">${JMARK}${CREDIT}</p></div>`;
 }
