@@ -85,6 +85,7 @@ label.lb{font-size:13px;font-weight:600;color:var(--mut);display:block;margin-bo
 </head>
 <body>
 <div id="app"></div>
+<div id="stalebar" role="status" style="display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#FFF4CC;color:#7A4B00;border:1px solid #F2C94C;padding:4px 12px;border-radius:999px;font-size:13px;z-index:15;box-shadow:0 2px 8px rgba(0,0,0,.12)">⟳ Naya data aa raha hai…</div>
 <script>
 /* ============ CONFIG ============ */
 const API_URL = 'https://script.google.com/macros/s/AKfycbxEaQ9qdFevDyHL_aDLAuf1i3hjZwl3H-Lhs_83xjqS2_yjuanUGi1CIwzSX3wN3g1B/exec';            // Apps Script web app URL (…/exec). Khali = demo mode
@@ -161,7 +162,7 @@ window.addEventListener('offline', () => render());
 const V = { tab: null, date: todayStr(), cust: null, menu: false, about: false, boyId: null, cache: {} };
 function logout(silent) {
   if (S && !DEMO && !silent) api('logout').catch(() => {});
-  S = null; store.del('skdmb_session'); Object.assign(V, { tab: null, cust: null, menu: false, about: false, cache: {} });
+  store.del(pcKey()); PC = null; PCK = ''; S = null; store.del('skdmb_session'); Object.assign(V, { tab: null, cust: null, menu: false, about: false, cache: {} });
   render();
 }
 const isOwner = () => S && ['Owner', 'Admin'].includes(S.user.role);
@@ -217,9 +218,34 @@ async function doLogin(e) {
   } catch (er) { $('#app').innerHTML = loginHtml(er.message); }
 }
 
+/* Turant khulna: pichhli baar ka data phone mein rakha rehta hai. Screen usi se turant khulti hai,
+   peeche se naya data aata hai aur screen apne aap update ho jaati hai (upar "update ho raha hai" dikhta hai). */
+const pcKey = () => 'skdmb_pc_' + (S ? S.user.role + '_' + S.user.name : '');
+let PC = null, PCK = '';
+function pc() { if (PCK !== pcKey()) { PCK = pcKey(); try { PC = JSON.parse(store.get(PCK) || '{}'); } catch (e) { PC = {}; } } return PC; }
+function pcPut(key, d) {
+  const c = pc(); c[key] = { d, t: Date.now() };
+  const ks = Object.keys(c).sort((a, b) => c[b].t - c[a].t); ks.slice(30).forEach(k => delete c[k]);
+  try { store.set(PCK, JSON.stringify(c)); } catch (e) { ks.slice(10).forEach(k => delete c[k]); try { store.set(PCK, JSON.stringify(c)); } catch (e2) {} }
+}
+const PEND = {};
+const staleBar = () => { const b = $('#stalebar'); if (b) b.style.display = Object.keys(PEND).length ? 'block' : 'none'; };
+const typing = () => { const a = document.activeElement; return !!a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && a.type !== 'date'; };
 async function load(key, fn) {
   if (V.cache[key]) return V.cache[key];
-  const r = await fn(); V.cache[key] = r; return r;
+  const old = DEMO ? null : pc()[key];
+  if (!old) { const r = await fn(); V.cache[key] = r; if (!DEMO) pcPut(key, r); return r; }
+  if (!PEND[key]) {
+    const who = pcKey();
+    PEND[key] = fn().then(r => {
+      delete PEND[key]; if (pcKey() !== who) return;
+      const changed = JSON.stringify(r) !== JSON.stringify(V.cache[key]);
+      V.cache[key] = r; pcPut(key, r);
+      if (changed && !typing()) { if (key.startsWith('route_')) V.routeData = null; render(); } else staleBar();
+    }).catch(() => { delete PEND[key]; staleBar(); });
+  }
+  V.cache[key] = old.d; setTimeout(staleBar, 0);
+  return old.d;
 }
 
 /* ----- chhote helpers: bolna, location, doodh ki goli ----- */
